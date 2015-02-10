@@ -1,3 +1,8 @@
+package leet.PalindromePartioningII;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /*
  Given a string s, partition s such that every substring of the partition is a palindrome.
 
@@ -14,67 +19,73 @@ loop through possible solution of 0, 1, ...
 */
 
 public class Solution {
-	private String inputString = null;
-	private int cutCount = 0;
+
+
+/*
+Given a string s, partition s such that every substring of the partition is a palindrome.
+
+Return the minimum cuts needed for a palindrome partitioning of s.
+
+For example, given s = "aab",
+Return 1 since the palindrome partitioning ["aa","b"] could be produced using 1 cut. 
+strategy:
+
+loop through possible solution of 0, 1, ...
+
+0 if s is itself a palindrome...
+
+*/
 
     public int minCut(String s) {
-    	inputString = s;
-    	extractLargestPalindrome(0, s.length());
-    	return cutCount;
+        // use dynamic programming to solve this
+        int length = s.length();
+        
+        if (length == 0)
+            return 0;
+        
+        int lastIndex = length-1;
+        
+        boolean[][] isPal = new boolean[length][length];
+        int[] minNumCut = new int[length];
+        
+        for (int i=lastIndex; i>=0; i--) {
+            minNumCut[i] = lastIndex - i;           // for string of length i, there is at least i cuts to make every substring palindrome
+            for (int j=i; j<length; j++) {
+                if (s.charAt(i) == s.charAt(j)) {
+                    if (j-i<2 || (isPal[i+1][j-1])) {
+                        isPal[i][j] = true;
+                        if (j == lastIndex)
+                            minNumCut[i] = 0;
+                        else
+                            minNumCut[i] = Math.min(minNumCut[i], minNumCut[j+1]+1);
+                    }
+                }
+            }
+        }
+        return minNumCut[0];
     }
 
-    private void setString(String s) {
-    	inputString = s;
-    }
+   public static void main(String[] argv) {
+       Map<String,Integer> questions = new HashMap<String, Integer>();
+       questions.put("", 0);
+       questions.put("a", 0);
+       questions.put("aa", 0);
+       questions.put("ab", 1);
+       questions.put("aba", 0);
+       questions.put("aaa", 0);
+       questions.put("aaabaa", 1);
+       questions.put("aaaba", 1);
+       questions.put("abcddefgh", 7);
+       questions.put("aaaaaaaaaaaaaaaa", 0);
+       questions.put("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 1);
 
-	private void extractLargestPalindrome(int start, int length) {
-		System.out.println("extracting from " + inputString.substring(start, start+length));
-		int maxLength = 0;
-		int startIndex = start; 
-		for (int i = 0; i<length-maxLength; i++) {
-			for (int subStringLength = length-i; subStringLength>0 && subStringLength > maxLength; subStringLength--) {
-				int ii = start+i;
-				if (isPal(ii, subStringLength)) {
-					if (subStringLength > maxLength) {
-						maxLength = subStringLength;
-						startIndex = ii;
-					}
-					break;
-				}
-			}
-		}
-		if (startIndex != start) {
-			cutCount++;
-			System.out.println(cutCount);
-			extractLargestPalindrome(start, startIndex-start);
-		}
-		if (startIndex+maxLength < start+length) {
-			cutCount++;
-			System.out.println(cutCount);
-			extractLargestPalindrome(startIndex+maxLength, start+length-startIndex-maxLength);
-		}
-	}
+       PalindromePartioningII worker = new PalindromePartioningII();
+       for (String key : questions.keySet()) {
+           int result = worker.minCut(key);
+           if (result != questions.get(key)) {
+               System.out.println("expected " + questions.get(key) + ". Got " + result + " for " + key);
+           }
+       }
 
-    // if length == 1 then return true
-    // so length input should always be > 1
-    private boolean isPal(int start, int length ) {
-//		System.out.println("isPal " + inputString.substring(start, start+length));
-    	if (length == 1)
-    		return true;
-    	int checkLength = length/2;
-    	int lastCharIndex = start+length-1;
-    	for (int i=0; i<checkLength; i++) { 
-    		if (inputString.charAt(start+i) != inputString.charAt(lastCharIndex-i))
-    			return false;
-    	}
-    	return true;
-    } 
-
-    public static void main(String[] argv) {
-//    	argv[0] = "aaabaa";
-//    	argv[0] = "aaaba";
-//		argv[0] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-//		argv[0] = "apjesgpsxoeiokmqmfgvjslcjukbqxpsobyhjpbgdfruqdkeiszrlmtwgfxyfostpqczidfljwfbbrflkgdvtytbgqalguewnhvvmcgxboycffopmtmhtfizxkmeftcucxpobxmelmjtuzigsxnncxpaibgpuijwhankxbplpyejxmrrjgeoevqozwdtgospohznkoyzocjlracchjqnggbfeebmuvbicbvmpuleywrpzwsihivnrwtxcukwplgtobhgxukwrdlszfaiqxwjvrgxnsveedxseeyeykarqnjrtlaliyudpacctzizcftjlunlgnfwcqqxcqikocqffsjyurzwysfjmswvhbrmshjuzsgpwyubtfbnwajuvrfhlccvfwhxfqthkcwhatktymgxostjlztwdxritygbrbibdgkezvzajizxasjnrcjwzdfvdnwwqeyumkamhzoqhnqjfzwzbixclcxqrtniznemxeahfozp";
-    	System.out.println(new Solution().minCut(argv[0]));
-    }
+   }
 }
