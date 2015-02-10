@@ -82,7 +82,7 @@ loop through possible solution of 0, 1, ...
             for (int j=0; j<=i; j++) {
                 if (s.charAt(i) == s.charAt(j)) {
                     if (i-j<2 || isPal[j+1][i-1]) {
-                        isPal[j][j] = true;
+                        isPal[j][i] = true;
                         if (j == 0)
                             minNumCut[i] = 0;
                         else
@@ -97,7 +97,6 @@ loop through possible solution of 0, 1, ...
     
    public static void main(String[] argv) {
        Map<String,Integer> questions = new HashMap<String, Integer>();
-       questions.put("aaaaaaaaaaaaaaaa", 0);
        questions.put("", 0);
        questions.put("a", 0);
        questions.put("aa", 0);
@@ -114,6 +113,12 @@ loop through possible solution of 0, 1, ...
        PalindromePartioningII worker = new PalindromePartioningII();
        for (String key : questions.keySet()) {
            int result = worker.minCut(key);
+           if (result != questions.get(key)) {
+               System.out.println("expected " + questions.get(key) + ". Got " + result + " for " + key);
+           }
+       }
+       for (String key : questions.keySet()) {
+           int result = worker.minCutForward(key);
            if (result != questions.get(key)) {
                System.out.println("expected " + questions.get(key) + ". Got " + result + " for " + key);
            }
