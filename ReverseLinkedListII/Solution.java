@@ -39,7 +39,7 @@ public class Solution {
 	    }
 
  
- 		ListNode reversedHead = topLast.next;
+ 		ListNode reversedHead = topLast==null?head:topLast.next;
 		ListNode reversedTail = reversedHead;
 		ListNode nextNode = reversedHead==null?null:reversedHead.next;
 
@@ -52,8 +52,10 @@ public class Solution {
 //        	printNode(reversedHead);
         }
 
-        topLast.next=reversedHead;
-
+        if (topLast != null)
+        	topLast.next=reversedHead;
+        else
+        	head = reversedHead;
         return head;
     }
 
@@ -78,13 +80,24 @@ public class Solution {
     }
 
     public static void main(String argv[]) {
-    	int[] intArray = {1,2,3,4,5,6,7,8,9,10};
 
-    	ListNode testNode = constructNodes(intArray);
-    	printNode(testNode);
+    	int[] intArray;
+    	ListNode testNode;
+    	ListNode result;
 
-    	ListNode result = new Solution().reverseBetween(testNode, 2, 5);
+    	intArray = new int[]{3,5};
+    	testNode = constructNodes(intArray);
+    	result = new Solution().reverseBetween(testNode, 1, 2);
+    	printNode(result);
 
+    	intArray = new int[]{1,2,3,4,5,6,7,8,9,10};
+    	testNode = constructNodes(intArray);
+    	result = new Solution().reverseBetween(testNode, 2, 5);
+    	printNode(result);
+
+    	intArray = new int[]{1,2,3,4,5};
+    	testNode = constructNodes(intArray);
+    	result = new Solution().reverseBetween(testNode, 4, 5);
     	printNode(result);
     }
 }
