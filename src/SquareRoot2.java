@@ -1,5 +1,3 @@
-package leet;
-
 /*
  * 
 Implement int sqrt(int x).

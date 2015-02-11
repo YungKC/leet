@@ -1,3 +1,5 @@
+package setMatrixZero;
+
 /* if an element is zero, then set all elements in that column and row to zeros
     perform this in place.
 

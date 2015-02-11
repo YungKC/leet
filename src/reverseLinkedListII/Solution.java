@@ -1,3 +1,5 @@
+package reverseLinkedListII;
+
 /*
 Reverse a linked list from position m to n. Do it in-place and in one-pass.
 
@@ -32,7 +34,7 @@ public class Solution {
     	if (m > 1) {
     		topLast = head;
 	        for (int i=2; i<m; i++) {
-	        	topLast = head.next;
+	        	topLast = topLast.next;
 	        	if (topLast == null)
 					return head;
 	        }

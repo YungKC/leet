@@ -1,5 +1,3 @@
-package leet;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -15,7 +13,7 @@ A valid Sudoku board (partially filled) is not necessarily solvable. Only the fi
 TODO: may want to switch on how sparse the matrix is. Can trim/sort as preprocess step
 
  */
-public class sudoku {
+public class Sudoku {
 
 	private static boolean isValidChar(char inChar) {
 		return inChar >= '1' && inChar <= '9';

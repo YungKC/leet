@@ -1,5 +1,3 @@
-package leet;
-
 public class Point {
     int x;
     int y;
