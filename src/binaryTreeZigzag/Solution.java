@@ -51,7 +51,7 @@ public class Solution {
 		else
 			curLevelList = solution.get(level);
 		
-		System.out.println("adding " + parent.val + " at level " + level);
+//		System.out.println("adding " + parent.val + " at level " + level);
 		
 		// Key idea here: the display order is determined how we insert data into array
 		if (level%2 == 0)
