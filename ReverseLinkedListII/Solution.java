@@ -24,10 +24,10 @@ Given m, n satisfy the following condition:
  * }
  */
 public class Solution {
-    public ListNode reverseBetween(ListNode head, int m, int n) {
-    	if (head == null || m <= n || m < 1)
+    public ListNode reverseBetween(ListNode head, final int m, final int n) {
+    	if (head == null || m >= n || m < 1) {
     		return head;
-
+		}
     	ListNode topLast = null;
     	if (m > 1) {
     		topLast = head;
@@ -38,7 +38,8 @@ public class Solution {
 	        }
 	    }
 
-		ListNode reversedHead = topLast.next;
+ 
+ 		ListNode reversedHead = topLast.next;
 		ListNode reversedTail = reversedHead;
 		ListNode nextNode = reversedHead==null?null:reversedHead.next;
 
@@ -46,8 +47,9 @@ public class Solution {
         	reversedTail.next = nextNode.next;
 	       	nextNode.next = reversedHead;
         	reversedHead = nextNode;
-        	System.out.print("processing " + i);
-        	printNode(reversedHead);
+        	nextNode = reversedTail.next;
+//        	System.out.print("processing " + i + ": ");
+//        	printNode(reversedHead);
         }
 
         topLast.next=reversedHead;
