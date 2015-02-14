@@ -61,19 +61,19 @@ public class Solution {
 		    			prefixMap.put(startIndex, list);
 		    		}
 	    			list.add(startIndex+i);
-	    			if (startIndex+1 == strLen)
+	    			if (startIndex+i == strLen)
 	    				canReachEnd = true;
 		    	}
 		    }
 	    }
 	    
-//	    if (!canReachEnd)
-//	    	return false;
+	    if (!canReachEnd)
+	    	return false;
 	    
-	    return findPrefix(0, 0) >= 0;
+	    return findPrefix(0) >= 0;
 	}
 	
-	private int findPrefix(int level, int startIndex) {    
+	private int findPrefix(int startIndex) {    
 //		if (count++ > 100)
 //			System.exit(0);
     	Set<Integer> prefixLengthList = prefixMap.get(startIndex);
@@ -83,15 +83,16 @@ public class Solution {
     	Iterator<Integer> it = prefixLengthList.iterator();
     	while (it.hasNext()) {
     		int nextIndex = it.next();
-//    		System.out.println("level: " + level + ", index: " + startIndex + " to " + nextIndex);
-    		if (nextIndex == strLen || findPrefix(level+1, nextIndex) == 1)
+ //   		System.out.println("level: " + level + ", index: " + startIndex + " to " + nextIndex);
+    		if (nextIndex == strLen || findPrefix(nextIndex) == 1)
     			return 1;
     	}
+    	prefixMap.remove(startIndex);
     	return -1;
 	}
 
 	public static void main(String argv[]) {
-		System.out.println("starting...");
+//		System.out.println("starting...");
 		Set<String> dict = new HashSet<String>();
 		Solution sol;
 		boolean result;
@@ -111,6 +112,16 @@ public class Solution {
 //		sol = new Solution();
 //		result = sol.wordBreak("aaaaa", dict);
 //		System.out.println(result);
+		
+		dict = new HashSet<String>();
+		dict.add("a");
+		dict.add("abc");
+		dict.add("b");
+		dict.add("cd");
+
+		sol = new Solution();
+		result = sol.wordBreak("abcd", dict);
+		System.out.println(result);
 		
 		dict = new HashSet<String>();
 		dict.add("a");
