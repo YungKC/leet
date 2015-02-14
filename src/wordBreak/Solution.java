@@ -26,7 +26,6 @@ generate map of startIndex to [list of substring length whose substring is in th
  * 
  */
 public class Solution {
-//	private static int count = 0;
 	private Map<Integer, Set<Integer>> prefixMap;
 	private int strLen = 0;
 	
@@ -44,50 +43,49 @@ public class Solution {
 	    		maxDictEntryStrLen = entry.length();
 	    }
 	    prefixMap = new HashMap<Integer, Set<Integer>>();
+		boolean canReachEnd = false;
 	    	    
 	    for (int startIndex = 0; startIndex<strLen; startIndex++) {
 		    for (int i=1; i<=maxDictEntryStrLen && i+startIndex <= strLen; i++) {
 		    	if (dict.contains(lowercase.substring(startIndex, i+startIndex))) {
-		    		Set<Integer> list = prefixMap.get(startIndex+i);
+		    		Set<Integer> list = prefixMap.get(startIndex);
 		    		if (list == null) {
 		    			list = new TreeSet<Integer>(new Comparator<Integer>(){
 		    				public int compare(Integer o1, Integer o2) 
                             {
-                                return o1-o2;
+                                return o2-o1;
                             }
 		    			});
-		    			prefixMap.put(startIndex+1, list);
+		    			prefixMap.put(startIndex, list);
 		    		}
-	    			list.add(startIndex);
+	    			list.add(startIndex+i);
+	    			if (startIndex+i == strLen)
+	    				canReachEnd = true;
 		    	}
 		    }
 	    }
 	    
-//	    if (!canReachEnd)
-//	    	return false;
+	    if (!canReachEnd)
+	    	return false;
 	    
-	    return findPrefix(0, 0) >= 0;
+	    return findPrefix(0);
 	}
 	
-	private int findPrefix(int level, int startIndex) {    
-//		if (count++ > 100)
-//			System.exit(0);
+	private boolean findPrefix(int startIndex) {    
     	Set<Integer> prefixLengthList = prefixMap.get(startIndex);
     	if (prefixLengthList == null) {
-    		return -1;
+    		return false;
     	}
-    	Iterator<Integer> it = prefixLengthList.iterator();
-    	while (it.hasNext()) {
-    		int nextIndex = it.next();
-//    		System.out.println("level: " + level + ", index: " + startIndex + " to " + nextIndex);
-    		if (nextIndex == strLen || findPrefix(level+1, nextIndex) == 1)
-    			return 1;
+    	for (int nextIndex:prefixLengthList) {
+ //   		System.out.println("level: " + level + ", index: " + startIndex + " to " + nextIndex);
+    		if (nextIndex == strLen || findPrefix(nextIndex))
+    			return true;
     	}
-    	return -1;
+    	prefixMap.remove(startIndex);		// need to remove the map entry if we verified that we cannot reach end from this index
+    	return false;
 	}
 
 	public static void main(String argv[]) {
-		System.out.println("starting...");
 		Set<String> dict = new HashSet<String>();
 		Solution sol;
 		boolean result;
@@ -110,6 +108,16 @@ public class Solution {
 		
 		dict = new HashSet<String>();
 		dict.add("a");
+		dict.add("abc");
+		dict.add("b");
+		dict.add("cd");
+
+		sol = new Solution();
+		result = sol.wordBreak("abcd", dict);
+		System.out.println(result == true);
+		
+		dict = new HashSet<String>();
+		dict.add("a");
 		dict.add("aa");
 		dict.add("aaa");
 		dict.add("aaaa");
@@ -121,6 +129,6 @@ public class Solution {
 		dict.add("aaaaaaaaaa");
 		sol = new Solution();
 		result = sol.wordBreak("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab", dict);
-		System.out.println(result);
+		System.out.println(result == false);
 	}
 }
