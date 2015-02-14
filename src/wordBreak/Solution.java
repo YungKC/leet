@@ -44,25 +44,21 @@ public class Solution {
 	    		maxDictEntryStrLen = entry.length();
 	    }
 	    prefixMap = new HashMap<Integer, Set<Integer>>();
-	    
-	    boolean canReachEnd = false;
-	    
+	    	    
 	    for (int startIndex = 0; startIndex<strLen; startIndex++) {
 		    for (int i=1; i<=maxDictEntryStrLen && i+startIndex <= strLen; i++) {
 		    	if (dict.contains(lowercase.substring(startIndex, i+startIndex))) {
-		    		Set<Integer> list = prefixMap.get(startIndex);
+		    		Set<Integer> list = prefixMap.get(startIndex+i);
 		    		if (list == null) {
 		    			list = new TreeSet<Integer>(new Comparator<Integer>(){
 		    				public int compare(Integer o1, Integer o2) 
                             {
-                                return o2-o1;
+                                return o1-o2;
                             }
 		    			});
-		    			prefixMap.put(startIndex, list);
+		    			prefixMap.put(startIndex+1, list);
 		    		}
-	    			list.add(startIndex+i);
-	    			if (startIndex+1 == strLen)
-	    				canReachEnd = true;
+	    			list.add(startIndex);
 		    	}
 		    }
 	    }
