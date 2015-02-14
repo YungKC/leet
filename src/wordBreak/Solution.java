@@ -26,7 +26,6 @@ generate map of startIndex to [list of substring length whose substring is in th
  * 
  */
 public class Solution {
-//	private static int count = 0;
 	private Map<Integer, Set<Integer>> prefixMap;
 	private int strLen = 0;
 	
@@ -70,29 +69,24 @@ public class Solution {
 	    if (!canReachEnd)
 	    	return false;
 	    
-	    return findPrefix(0) >= 0;
+	    return findPrefix(0);
 	}
 	
-	private int findPrefix(int startIndex) {    
-//		if (count++ > 100)
-//			System.exit(0);
+	private boolean findPrefix(int startIndex) {    
     	Set<Integer> prefixLengthList = prefixMap.get(startIndex);
     	if (prefixLengthList == null) {
-    		return -1;
+    		return false;
     	}
-    	Iterator<Integer> it = prefixLengthList.iterator();
-    	while (it.hasNext()) {
-    		int nextIndex = it.next();
+    	for (int nextIndex:prefixLengthList) {
  //   		System.out.println("level: " + level + ", index: " + startIndex + " to " + nextIndex);
-    		if (nextIndex == strLen || findPrefix(nextIndex) == 1)
-    			return 1;
+    		if (nextIndex == strLen || findPrefix(nextIndex))
+    			return true;
     	}
-    	prefixMap.remove(startIndex);
-    	return -1;
+    	prefixMap.remove(startIndex);		// need to remove the map entry if we verified that we cannot reach end from this index
+    	return false;
 	}
 
 	public static void main(String argv[]) {
-//		System.out.println("starting...");
 		Set<String> dict = new HashSet<String>();
 		Solution sol;
 		boolean result;
@@ -121,7 +115,7 @@ public class Solution {
 
 		sol = new Solution();
 		result = sol.wordBreak("abcd", dict);
-		System.out.println(result);
+		System.out.println(result == true);
 		
 		dict = new HashSet<String>();
 		dict.add("a");
@@ -136,6 +130,6 @@ public class Solution {
 		dict.add("aaaaaaaaaa");
 		sol = new Solution();
 		result = sol.wordBreak("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab", dict);
-		System.out.println(result);
+		System.out.println(result == false);
 	}
 }
