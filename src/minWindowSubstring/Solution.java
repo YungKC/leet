@@ -124,6 +124,7 @@ public class Solution {
 	public static void main(String[] args) {
 		Solution solution = new Solution();
 		
+		System.out.println(solution.minWindow("bba", "ab").equals("ba"));
 		System.out.println(solution.minWindow("cabwefgewcwaefgcf", "cae").equals("cwae"));
 		System.out.println(solution.minWindow("a", "a").equals("a"));
 		System.out.println(solution.minWindow("abcad", "aa").equals("abca"));
