@@ -2,6 +2,8 @@ package copyListWithRandomPointer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 /*
  * 
@@ -20,25 +22,44 @@ public class Solution {
         if (head == null)
         	return null;
         
-        Map<RandomListNode, RandomListNode> sourceParent = new HashMap<RandomListNode, RandomListNode>();
+        Set<RandomListNode> sourceNodes = new HashSet<RandomListNode>();
         Map<RandomListNode, RandomListNode> sourceToClone = new HashMap<RandomListNode, RandomListNode>();
 
         RandomListNode source = head;
         RandomListNode result = new RandomListNode(source.label);
-        sourceToClone.put(source, result);
-        if (source.random != null) {
-        	if (sourceToClone.get(source.random) == null) {
-        		RandomListNode curRandom = new RandomListNode(source.random.label);
-        		sourceToClone.put(source.random, curRandom);
-        		
-        	}
+        RandomListNode clonedNode = result;
+        sourceNodes.add(source);
+        sourceToClone.put(source, clonedNode);
+
+        RandomListNode nextSource = source.next;
+        RandomListNode circularNode = null;
+        while (nextSource != null) {
+            if (sourceNodes.contains(nextSource)) {
+                clonedNode.next = sourceToClone.get(nextSource);
+                circularNode = nextSource;
+                break;
+            }
+            else {
+                clonedNode.next = new RandomListNode(nextSource.label);
+                clonedNode = clonedNode.next;
+                sourceToClone.put(nextSource, clonedNode);
+                sourceNodes.add(nextSource);
+                nextSource = nextSource.next;
+            }
         }
-        RandomListNode current = result;
-        if (source.next != null) {
-        	current.next = new RandomListNode(source.next.label);
-        }
+
+        source = head;
+        clonedNode = result;
+        do {
+            if (source.random != null)
+                clonedNode.random = sourceToClone.get(source.random);
+            source = source.next;
+            clonedNode = clonedNode.next;
+        } while (source != circularNode);
+
+        return result;
     }
-    
+
 	public static void main(String[] args) {
 
 	}
