@@ -32,8 +32,9 @@ public class Solution {
         RandomListNode nextSource = source.next;
         RandomListNode circularNode = null;
         while (nextSource != null) {
-            if (sourceToClone.keySet().contains(nextSource)) {
-                clonedNode.next = sourceToClone.get(nextSource);
+        	RandomListNode aNode = sourceToClone.get(nextSource);
+            if (aNode != null) {
+                clonedNode.next = aNode;
                 circularNode = nextSource;
                 break;
             }
