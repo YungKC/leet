@@ -61,7 +61,31 @@ public class Solution {
     }
 
 	public static void main(String[] args) {
+        Solution sol = new Solution();
+        RandomListNode node = new RandomListNode(0);
+        RandomListNode first = node;
+        node.next = new RandomListNode(1);
+        node = node.next;
+        node.next = first;
+        node.random = first;
 
+        RandomListNode result = sol.copyRandomList(first);
+        printList(result, result);
 	}
+
+    private static void printList(RandomListNode first, RandomListNode node) {
+        if (node != null) {
+            System.out.print(node.label + " -> ");
+            if (node.random != null) {
+                System.out.println(node.random.label);
+            }
+            else
+                System.out.println();
+
+            if (node.next != null && node.next != first)
+                printList(first, node.next);
+        }
+
+    }
 
 }
