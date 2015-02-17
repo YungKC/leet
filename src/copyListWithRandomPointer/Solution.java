@@ -22,19 +22,17 @@ public class Solution {
         if (head == null)
         	return null;
         
-        Set<RandomListNode> sourceNodes = new HashSet<RandomListNode>();
         Map<RandomListNode, RandomListNode> sourceToClone = new HashMap<RandomListNode, RandomListNode>();
 
         RandomListNode source = head;
         RandomListNode result = new RandomListNode(source.label);
         RandomListNode clonedNode = result;
-        sourceNodes.add(source);
         sourceToClone.put(source, clonedNode);
 
         RandomListNode nextSource = source.next;
         RandomListNode circularNode = null;
         while (nextSource != null) {
-            if (sourceNodes.contains(nextSource)) {
+            if (sourceToClone.keySet().contains(nextSource)) {
                 clonedNode.next = sourceToClone.get(nextSource);
                 circularNode = nextSource;
                 break;
@@ -43,7 +41,6 @@ public class Solution {
                 clonedNode.next = new RandomListNode(nextSource.label);
                 clonedNode = clonedNode.next;
                 sourceToClone.put(nextSource, clonedNode);
-                sourceNodes.add(nextSource);
                 nextSource = nextSource.next;
             }
         }
@@ -70,7 +67,7 @@ public class Solution {
         first = node;
         node.next = node;
         result = sol.copyRandomList(first);
-        sourceNodes = new HashSet<RandomListNode>();
+        walkedNodes = new HashSet<RandomListNode>();
         printList(result);
         
         
@@ -85,14 +82,14 @@ public class Solution {
         node = node.next;
         node.next = node;
         result = sol.copyRandomList(first);
-        sourceNodes = new HashSet<RandomListNode>();
+        walkedNodes = new HashSet<RandomListNode>();
         printList(result);
 	}
 
-	private static Set<RandomListNode> sourceNodes;
+	private static Set<RandomListNode> walkedNodes;
     private static void printList(RandomListNode node) {
         if (node != null) {
-        	sourceNodes.add(node);
+        	walkedNodes.add(node);
         	System.out.print(node.label + " -> ");
             if (node.random != null) {
                 System.out.println(node.random.label);
@@ -100,7 +97,7 @@ public class Solution {
             else
                 System.out.println();
 
-            if (node.next != null && !sourceNodes.contains(node.next))
+            if (node.next != null && !walkedNodes.contains(node.next))
                 printList(node.next);
         }
 
