@@ -25,19 +25,28 @@ public class Solution {
         for (; startIndex<length; startIndex++)
         	if (A[startIndex] != 0)
         		break;
-        	else
-        		hasZero = true;
+        if (startIndex != 0)
+        	hasZero = true;
+        
+        int endIndex = length-1;
+        for (; endIndex>startIndex; endIndex--)
+        	if (A[endIndex] != 0)
+        		break;
+        if (endIndex != length-1)
+        	hasZero = true;
+        
  
         List<Segment> segmentList = new ArrayList<Segment>();
         int lastNonZeroIndex = startIndex;
         int numNegatives = 0;
+        endIndex++;	// mark last good index + 1;
         
-        for (int i=startIndex; i<=length; i++) {
-        	if (i==length || A[i] == 0) {
+        for (int i=startIndex; i<=endIndex; i++) {
+        	if (i==endIndex || A[i] == 0) {
         		if (i != startIndex) {
         			segmentList.add(new Segment(startIndex, lastNonZeroIndex, numNegatives));
         		}
-        		if (i==length)
+        		if (i==endIndex)
         			break;
         		else
         			hasZero = true;
@@ -90,7 +99,7 @@ public class Solution {
         			continue;
         		}
         	}
-        		int product = 1;
+        	int product = 1;
     		for (int i=segment.start; i<= segment.end; i++) {
     			product *= A[i];
     		}
