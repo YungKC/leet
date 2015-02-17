@@ -62,28 +62,46 @@ public class Solution {
 
 	public static void main(String[] args) {
         Solution sol = new Solution();
-        RandomListNode node = new RandomListNode(0);
-        RandomListNode first = node;
+        RandomListNode node;
+        RandomListNode first;
+        RandomListNode result;
+        
+        node = new RandomListNode(0);
+        first = node;
+        node.next = node;
+        result = sol.copyRandomList(first);
+        sourceNodes = new HashSet<RandomListNode>();
+        printList(result);
+        
+        
+        node = new RandomListNode(0);
+        first = node;
         node.next = new RandomListNode(1);
         node = node.next;
-        node.next = first;
         node.random = first;
-
-        RandomListNode result = sol.copyRandomList(first);
-        printList(result, result);
+        node.next = new RandomListNode(2);
+        node = node.next;
+        node.next = new RandomListNode(3);
+        node = node.next;
+        node.next = node;
+        result = sol.copyRandomList(first);
+        sourceNodes = new HashSet<RandomListNode>();
+        printList(result);
 	}
 
-    private static void printList(RandomListNode first, RandomListNode node) {
+	private static Set<RandomListNode> sourceNodes;
+    private static void printList(RandomListNode node) {
         if (node != null) {
-            System.out.print(node.label + " -> ");
+        	sourceNodes.add(node);
+        	System.out.print(node.label + " -> ");
             if (node.random != null) {
                 System.out.println(node.random.label);
             }
             else
                 System.out.println();
 
-            if (node.next != null && node.next != first)
-                printList(first, node.next);
+            if (node.next != null && !sourceNodes.contains(node.next))
+                printList(node.next);
         }
 
     }
