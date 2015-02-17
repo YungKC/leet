@@ -52,10 +52,14 @@ public class Solution {
         	return result;
         
         for (int i=0; i<listLength-3; i++) {
+        	int targetValue0 = target - inputList.get(i);        	
             for (int j=i+1; j<listLength-2; j++) {
+            	int targetValue1 = targetValue0 - inputList.get(j);
                 for (int k=j+1; k<listLength-1; k++) {               	
-                	int targetValue = target - inputList.get(i) - inputList.get(j) - inputList.get(k);
-                	if (targetValue >= inputList.get(k-1) && targetValue <= maxValue) {
+                	int targetValue = targetValue1 - inputList.get(k);
+                	if (targetValue < inputList.get(k+1))
+                		break;
+                	if (targetValue <= maxValue) {
 	                	// use bisect to determine if there is a match
 	                	int left = k+1;
 	                	int right = listLength-1;
@@ -114,5 +118,14 @@ public class Solution {
     	
     	input = new int[]{1, 0, -1, 0, -2, 2};
     	System.out.println(sol.fourSum(input, 0));
+    	
+    	
+//    	[[-3, -2, 2, 3], [-3, -1, 1, 3], [-3, 0, 0, 3], [-3, 0, 1, 2], [-2, -1, 0, 3], [-2, -1, 1, 2], [-2, 0, 0, 2], [-1, 0, 0, 1]]
+//    	[[-4, 0, 1, 2], [-1, -1, 0, 1]]
+//    	[[-79583480, -70078020, -65863359, -21202664], [-76072023, -59608044, -58094433, -42953023]]
+//    	[]
+//    	[[0, 0, 0, 0]]
+//    	[[-2, -1, 1, 2], [-2, 0, 0, 2], [-1, 0, 0, 1]]
+    					
     }
 }
