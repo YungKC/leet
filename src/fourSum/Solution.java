@@ -20,6 +20,10 @@ The solution set must not contain duplicate quadruplets.
     (-1,  0, 0, 1)
     (-2, -1, 1, 2)
     (-2,  0, 0, 2)
+    
+More or less brute force method, using biset solution to search for last element
+
+Another approach is to use 2 2sum solution, treat it as a 2sum problem.
 
  */
 public class Solution {
