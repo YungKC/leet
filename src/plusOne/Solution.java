@@ -9,22 +9,16 @@ Given a non-negative number represented as an array of digits, plus one to the n
 
 The digits are stored such that the most significant digit is at the head of the list.
 
+observation: treat +1 as a carrier to simplify code
+
  */
 public class Solution {
 
     public int[] plusOne(int[] digits) {
         int count = digits.length;
     	int[] result = new int[count];
-    	boolean isCarried = false;
-    	int lastDigit = count-1;
-    	if (digits[lastDigit] == 9) {
-    		result[lastDigit] = 0;
-    		isCarried = true;
-    	}
-    	else
-    		result[lastDigit] = digits[lastDigit]+1;
-    	
-        for (int i = lastDigit-1; i>=0; i--) {
+    	boolean isCarried = true;
+        for (int i = count-1; i>=0; i--) {
         	if (isCarried) {
             	if (digits[i] == 9) {
             		result[i] = 0;
