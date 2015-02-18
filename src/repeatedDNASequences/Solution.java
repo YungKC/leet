@@ -60,7 +60,7 @@ public class Solution {
         
         for (int i=10; i<length; i++) {
 //        	val = encodeDNA(val, baseSequence[i]);
-        	val = (int)(val<<2 & 0xFFFFF) + Base2Val.get(baseSequence[i]);
+        	val = (val<<2 & 0xFFFFF) + Base2Val.get(baseSequence[i]);
 
         	if (sequences.contains(val)) {
         		if (!result.contains(val)) {
@@ -90,7 +90,7 @@ public class Solution {
     }
     
     private static int encodeDNA(final int baseDNA, final char nextBase) {
-    	return (int)(baseDNA<<2 & 0xFFFFF) + Base2Val.get(nextBase);
+    	return (baseDNA<<2 & 0xFFFFF) + Base2Val.get(nextBase);
 //    	System.out.println("from: " +  String.valueOf(Integer.toBinaryString(baseDNA) + " : " + nextBase + " to : " + Integer.toBinaryString(tmp)));
 //    	return tmp;
     }
@@ -110,7 +110,7 @@ public class Solution {
     	char[] result = new char[10];
     	for (int i=9; i>=0; i--) {
     		result[i] = Val2Base.get((int)(val & 0x3));
-    		val = (int)(val >> 2);
+    		val = val >> 2;
     	}
     	return result;
     }
