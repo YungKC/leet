@@ -1,5 +1,6 @@
 package binaryTreePreorderTraversal;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /*
@@ -23,8 +24,21 @@ symetric is left, node, right
  */
 
 public class Solution {
+	private List<Integer> result;
     public List<Integer> preorderTraversal(TreeNode root) {
-        
+        result = new ArrayList<Integer>();
+    	if (root == null)
+    		return result;
+        getPreorderRecursive(root);
+        return result;
+    }
+    
+    private void getPreorderRecursive(TreeNode root) {
+    	result.add(root.val);
+    	if (root.left != null)
+    		getPreorderRecursive(root.left);
+    	if (root.right != null)
+    		getPreorderRecursive(root.right);
     }
     
     public static void main(String[] argv) {
@@ -35,7 +49,11 @@ public class Solution {
     	node.right = new TreeNode(2);
     	node = node.right;
     	node.left = new TreeNode(3);
+    	node.right = new TreeNode(4);
     	
-    	sol.preorderTraversal(root);
+    	List<Integer> answer = sol.preorderTraversal(root);
+    	for (int val : answer)
+    		System.out.print(val + " ");
+    	System.out.println();
     }
 }
