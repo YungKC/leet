@@ -1,10 +1,8 @@
 package repeatedDNASequences;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /*
@@ -60,7 +58,7 @@ public class Solution {
         
         for (int i=10; i<length; i++) {
 //        	val = encodeDNA(val, baseSequence[i]);
-        	val = (val<<2 & 0xFFFFF) + Base2Val.get(baseSequence[i]);
+        	val = (val<<2 & 0xFFFFF) + Base2Val[baseSequence[i]];
 
         	if (sequences.contains(val)) {
         		if (!result.contains(val)) {
@@ -76,31 +74,29 @@ public class Solution {
         return finalResult;
     }
     
-    private static Map<Character, Integer> Base2Val = new HashMap<Character, Integer>(4);
-    private static Map<Integer, Character> Val2Base = new HashMap<Integer, Character>(4);
+//    private static Map<Character, Integer> Base2Val = new HashMap<Character, Integer>(4);
+    private static int[] Base2Val = new int[256];
+    private static char[] Val2Base = {'A', 'C', 'G', 'T'};
     static {
-    	Base2Val.put('A', (int) 0);
-    	Base2Val.put('C', (int) 1);
-    	Base2Val.put('G', (int) 2);
-    	Base2Val.put('T', (int) 3);    
-    	Val2Base.put((int) 0, 'A');
-    	Val2Base.put((int) 1, 'C');
-    	Val2Base.put((int) 2, 'G');
-    	Val2Base.put((int) 3, 'T');    	
+    	Base2Val['A']= 0;
+    	Base2Val['C']= 1;
+    	Base2Val['G']= 2;
+    	Base2Val['T']= 3;
+   
     }
     
     private static int encodeDNA(final int baseDNA, final char nextBase) {
-    	return (baseDNA<<2 & 0xFFFFF) + Base2Val.get(nextBase);
+    	return (baseDNA<<2 & 0xFFFFF) + Base2Val[nextBase];
 //    	System.out.println("from: " +  String.valueOf(Integer.toBinaryString(baseDNA) + " : " + nextBase + " to : " + Integer.toBinaryString(tmp)));
 //    	return tmp;
     }
     
     private static int encodeDNA(final char[] inCharArray, final int start, final int end) {
-    	int val = Base2Val.get(inCharArray[start]);
+    	int val = Base2Val[inCharArray[start]];
     	
     	for (int i=start+1; i<end; i++) {
     		val = (int)(val<<2);
-    		val += Base2Val.get(inCharArray[i]);
+    		val += Base2Val[inCharArray[i]];
     	}
     	return val;
     }
@@ -109,7 +105,7 @@ public class Solution {
     	int val = dnaVal;
     	char[] result = new char[10];
     	for (int i=9; i>=0; i--) {
-    		result[i] = Val2Base.get((int)(val & 0x3));
+    		result[i] = Val2Base[val & 0x3];
     		val = val >> 2;
     	}
     	return result;
