@@ -53,13 +53,12 @@ public class Solution {
         if (s == null || s.length() <= 10)
         	return finalResult;
         
-        String subString = s.substring(0, 10);
-		int val = encodeDNA(subString.toCharArray());
+        char[] baseSequence = s.toCharArray();        
+		int val = encodeDNA(baseSequence, 0, 10);
 		sequences.add(val);
-        char[] baseSequence = s.substring(10).toCharArray();        
         int length = baseSequence.length;
         
-        for (int i=0; i<length; i++) {
+        for (int i=10; i<length; i++) {
 //        	val = encodeDNA(val, baseSequence[i]);
         	val = (int)(val<<2 & 0xFFFFF) + Base2Val.get(baseSequence[i]);
 
@@ -96,10 +95,10 @@ public class Solution {
 //    	return tmp;
     }
     
-    private static int encodeDNA(final char[] inCharArray) {
-    	int val = Base2Val.get(inCharArray[0]);
+    private static int encodeDNA(final char[] inCharArray, final int start, final int end) {
+    	int val = Base2Val.get(inCharArray[start]);
     	
-    	for (int i=1; i<inCharArray.length; i++) {
+    	for (int i=start+1; i<end; i++) {
     		val = (int)(val<<2);
     		val += Base2Val.get(inCharArray[i]);
     	}
@@ -122,7 +121,7 @@ public class Solution {
 		String inString = "AAAAACCCCCAAAAACCCCCCAAAAAGGGTTT";
 		String subString = inString.substring(0, Math.min(10, inString.length()));
 		System.out.println(subString);
-		int val = encodeDNA(subString.toCharArray());
+		int val = encodeDNA(subString.toCharArray(), 0, 10);
 		System.out.println(val);
 		String decodedString = String.valueOf(decodeDNA(val));
 		System.out.println(decodedString);
