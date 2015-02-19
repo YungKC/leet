@@ -45,9 +45,18 @@ choose to move toward higher dungeon value first
 
 ensure at each spot, health > 0
 
-key: startHealth can only get higher as one progress. 
+
+key: 
+	start from the endspot, determine the minimum health needed to enter there.
+	at each spot, there is only 2 possible moves. find minimum health needed there to move to the next best spot.
+	recursion takes too long and too resource intensive. Use inner loop instead.
+
+previous attempt:
+
+startHealth can only get higher as one progress. 
 If we found a solution with startHealth ss, then any attempt with current startHealth sc where sc >= ss can be terminated.
  */
+
 public class Solution {
 
 	int[][] curMaze;
@@ -56,7 +65,39 @@ public class Solution {
 	int curBalance;
 	boolean foundPath;
 
+
     public int calculateMinimumHP(int[][] dungeon) {
+    	if (dungeon == null)
+    		return 1;
+    	int[][] curMaze = dungeon;
+        int maxRow = curMaze.length - 1;
+        if (maxRow == -1)
+        	return 1;
+        int maxCol = curMaze[0].length - 1;
+        if (maxCol == -1)
+        	return 1;
+
+        
+    	curMaze[maxRow][maxCol] = curMaze[maxRow][maxCol] >= 0 ? 0 : -curMaze[maxRow][maxCol];
+    	// bottom row
+    	for (int col=maxCol-1; col>=0; col--) {
+    		curMaze[maxRow][col] = curMaze[maxRow][col] >= curMaze[maxRow][col+1] ? 0:curMaze[maxRow][col+1]-curMaze[maxRow][col];    		
+    	}
+    	// right column
+    	for (int row=maxRow-1; row>=0; row--) {
+    		curMaze[row][maxCol] = curMaze[row][maxCol] >= curMaze[row+1][maxCol] ? 0:curMaze[row+1][maxCol]-curMaze[row][maxCol];    		
+    	}
+    	// others
+    	for (int row = maxRow-1; row>=0; row--) {
+    		for (int col=maxCol-1; col>=0; col--) {
+    			int minHealth = curMaze[row][col+1] < curMaze[row+1][col] ? curMaze[row][col+1] : curMaze[row+1][col];
+        		curMaze[row][col] = curMaze[row][col] >= minHealth ? 0 : minHealth-curMaze[row][col];    		
+    		}
+    	}
+    	return curMaze[0][0]+1;
+    }  	
+		    
+    public int calculateMinimumHP_Old(int[][] dungeon) {
     	if (dungeon == null)
     		return 1;
         curMaze = dungeon;
