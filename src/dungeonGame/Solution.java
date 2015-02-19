@@ -1,5 +1,8 @@
 package dungeonGame;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /*
  * 
 The demons had captured the princess (P) and imprisoned her in the bottom-right corner of a dungeon. 
@@ -42,17 +45,16 @@ choose to move toward higher dungeon value first
 
 ensure at each spot, health > 0
 
-key: mark each spot with minHealthBalance. If entry with this spot is higher than this health, then stop since a lower value was already found
-
+key: startHealth can only get higher as one progress. 
+If we found a solution with startHealth ss, then any attempt with current startHealth sc where sc >= ss can be terminated.
  */
 public class Solution {
 
 	int[][] curMaze;
 	int maxRow, maxCol;
-	int minHealth;
+	int minStartHealth;
 	int curBalance;
 	boolean foundPath;
-	int[][] maxHealthBalance;
 
     public int calculateMinimumHP(int[][] dungeon) {
     	if (dungeon == null)
@@ -64,23 +66,18 @@ public class Solution {
         maxCol = curMaze[0].length - 1;
         if (maxCol == -1)
         	return 1;
-        maxHealthBalance = new int[maxRow+1][maxCol+1];
-        for (int r=0; r<=maxRow; r++)
-        	for (int c=0; c<=maxCol; c++)
-        		maxHealthBalance[r][c] = Integer.MIN_VALUE;
 
-        minHealth = Integer.MAX_VALUE;
+        minStartHealth = Integer.MAX_VALUE;
         foundPath = false;
+        
         traverseTo(0,0,1,1);
-        return minHealth;
+        return minStartHealth;
     }
     
     // returns the deficit needed to add to initial balance
-    private boolean traverseTo(int r, int c, int startHealth, int balance) {
-    	if (foundPath)
-    		return false;
-    	if (balance < maxHealthBalance[r][c])
-    		return true;
+    private void traverseTo(int r, int c, int startHealth, int balance) {
+    	if (startHealth >= minStartHealth)
+    		return;
     	
     	int newBalance = balance + curMaze[r][c];
     	if (newBalance < 1) {
@@ -88,37 +85,27 @@ public class Solution {
     		newBalance = 1;
     		startHealth += healthNeeded - balance;
     	}
-    	if (startHealth > minHealth)
-    		return true;
+    	if (startHealth > minStartHealth)
+    		return;
     	
     	if (r==maxRow && c==maxCol) {
-			minHealth = startHealth;
-			if (minHealth == 1) {
-				foundPath = true;
-				return false;
-    		}
-			return true;
+			minStartHealth = startHealth;
+			return;
     	}
 
-    	// Important: only set this if we are not at the final spot! Tricky!!!
-    	maxHealthBalance[r][c] = balance;
-
-    	boolean shouldContinue;
     	if (c == maxCol)
-    		shouldContinue = traverseTo(r+1, c, startHealth, newBalance);
+    		traverseTo(r+1, c, startHealth, newBalance);
     	else if (r == maxRow)
-    		shouldContinue = traverseTo(r, c+1, startHealth, newBalance);    		
+    		traverseTo(r, c+1, startHealth, newBalance);    		
     	else if (curMaze[r+1][c] > curMaze[r][c+1]) {
-    		shouldContinue = traverseTo(r+1, c, startHealth, newBalance);
-    		if (shouldContinue)
-    			shouldContinue = traverseTo(r, c+1, startHealth, newBalance);
+    		traverseTo(r+1, c, startHealth, newBalance);
+    		traverseTo(r, c+1, startHealth, newBalance);
     	}
     	else {
-    		shouldContinue = traverseTo(r, c+1, startHealth, newBalance);
-    		if (shouldContinue)
-    			shouldContinue = traverseTo(r+1, c, startHealth, newBalance);
+    		traverseTo(r, c+1, startHealth, newBalance);
+    		traverseTo(r+1, c, startHealth, newBalance);
     	}
-    	return shouldContinue;
+    	return ;
     }
     
     public static void main(String[] args) {
