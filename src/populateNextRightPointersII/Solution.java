@@ -37,32 +37,35 @@ public class Solution {
         	return;
         
         TreeLinkNode parent = root;
-        while (parent.left != null || parent.right != null) {
-            TreeLinkNode lastNodeToLinkFrom = null;
-            TreeLinkNode firstNodeInCurrentLevel = null;
-	        do {
-	        	if (parent.left != null) {
-		        	if (lastNodeToLinkFrom != null)
-		        		lastNodeToLinkFrom.next = parent.left;
-		        	else
-		        		firstNodeInCurrentLevel = parent.left;
-		        	if (parent.right != null) {
-		        		parent.left.next = parent.right;
-			        	lastNodeToLinkFrom = parent.right;
-		        	} else {
-			        	lastNodeToLinkFrom = parent.left;
+        do {
+	        while (parent.left != null || parent.right != null) {
+	            TreeLinkNode lastNodeToLinkFrom = null;
+	            TreeLinkNode firstNodeInCurrentLevel = null;
+		        do {
+		        	if (parent.left != null) {
+			        	if (lastNodeToLinkFrom != null)
+			        		lastNodeToLinkFrom.next = parent.left;
+			        	else
+			        		firstNodeInCurrentLevel = parent.left;
+			        	if (parent.right != null) {
+			        		parent.left.next = parent.right;
+				        	lastNodeToLinkFrom = parent.right;
+			        	} else {
+				        	lastNodeToLinkFrom = parent.left;
+			        	}
+		        	} else if (parent.right != null) {
+			        	if (lastNodeToLinkFrom != null)
+			        		lastNodeToLinkFrom.next = parent.right;
+			        	else
+			        		firstNodeInCurrentLevel = parent.right;
+			        	lastNodeToLinkFrom = parent.right;	        		
 		        	}
-	        	} else if (parent.right != null) {
-		        	if (lastNodeToLinkFrom != null)
-		        		lastNodeToLinkFrom.next = parent.right;
-		        	else
-		        		firstNodeInCurrentLevel = parent.right;
-		        	lastNodeToLinkFrom = parent.right;	        		
-	        	}
-	        	parent = parent.next;
-	        } while (parent != null);
-	        parent = firstNodeInCurrentLevel;
-        }
+		        	parent = parent.next;
+		        } while (parent != null);
+		        parent = firstNodeInCurrentLevel;
+	        }
+	        parent = parent.next;
+        } while (parent != null);
     }
     
     public static void main(String[] args) {
