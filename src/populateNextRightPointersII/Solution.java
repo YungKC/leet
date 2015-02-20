@@ -37,27 +37,64 @@ public class Solution {
         	return;
         
         TreeLinkNode parent = root;
-        while (parent.left != null) {
-            TreeLinkNode lastRightNode = null;
-            TreeLinkNode leftMostNode = null;
+        while (parent.left != null || parent.right != null) {
+            TreeLinkNode lastNodeToLinkFrom = null;
+            TreeLinkNode firstNodeInCurrentLevel = null;
 	        do {
-	        	if (lastRightNode != null)
-	        		lastRightNode.next = parent.left;
-	        	else
-	        		leftMostNode = parent.left;
 	        	if (parent.left != null) {
-		        	parent.left.next = parent.right;
-		        	lastRightNode = parent.right;
+		        	if (lastNodeToLinkFrom != null)
+		        		lastNodeToLinkFrom.next = parent.left;
+		        	else
+		        		firstNodeInCurrentLevel = parent.left;
+		        	if (parent.right != null) {
+		        		parent.left.next = parent.right;
+			        	lastNodeToLinkFrom = parent.right;
+		        	} else {
+			        	lastNodeToLinkFrom = parent.left;
+		        	}
+	        	} else if (parent.right != null) {
+		        	if (lastNodeToLinkFrom != null)
+		        		lastNodeToLinkFrom.next = parent.right;
+		        	else
+		        		firstNodeInCurrentLevel = parent.right;
+		        	lastNodeToLinkFrom = parent.right;	        		
 	        	}
 	        	parent = parent.next;
 	        } while (parent != null);
-	        parent = leftMostNode;
+	        parent = firstNodeInCurrentLevel;
         }
     }
     
     public static void main(String[] args) {
 		Solution sol = new Solution();
 		TreeLinkNode root;
+		
+		root = new TreeLinkNode(0);
+		root.left = new TreeLinkNode(11);
+		root.right = new TreeLinkNode(12);
+		root.right.left = new TreeLinkNode(21);
+		root.right.right = new TreeLinkNode(22);
+		sol.connect(root);
+		System.out.println(root);		
+		
+		root = new TreeLinkNode(0);
+		root.left = new TreeLinkNode(11);
+		root.right = new TreeLinkNode(12);
+		root.left.left = new TreeLinkNode(21);
+		root.left.right = new TreeLinkNode(22);
+		root.right.left = new TreeLinkNode(23);
+		root.right.right = new TreeLinkNode(24);
+		root.left.left.left = new TreeLinkNode(31);
+		root.left.left.right = new TreeLinkNode(32);
+		root.left.right.left = new TreeLinkNode(33);
+		root.left.right.right = new TreeLinkNode(34);
+		root.right.left.left = new TreeLinkNode(35);
+		root.right.left.right = new TreeLinkNode(36);
+		root.left.left.left.left = new TreeLinkNode(41);
+		root.left.left.left.right = new TreeLinkNode(42);
+		sol.connect(root);
+		System.out.println(root);
+		
 		
 		root = new TreeLinkNode(0);
 		root.left = new TreeLinkNode(1);
