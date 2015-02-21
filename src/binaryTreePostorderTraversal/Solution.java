@@ -15,6 +15,10 @@ return [3,2,1].
 
 Note: Recursive solution is trivial, could you do it iteratively?
 
+Observation:
+
+I can trim the children once they are traversed.
+
  */
 import java.util.ArrayList;
 import java.util.List;
@@ -26,56 +30,32 @@ public class Solution {
     public List<Integer> postorderTraversal(TreeNode root) {
     	result = new ArrayList<Integer>();
     	List<TreeNode> nodeList = new ArrayList<TreeNode>();
-    	boolean isPopped = false;
-    	boolean hasWalkRightSide = false;
     	TreeNode curNode = root;
     	while (curNode != null) {
     		if (curNode.left == null && curNode.right == null) {
-    			isPopped = false;
     			result.add(curNode.val);
     			if (nodeList.size() > 0) {
     				TreeNode lastCurNode = curNode;
-    				curNode = nodeList.get(nodeList.size()-1);
-    				if (curNode.right != null) {
-    					if (curNode.right != lastCurNode) {
-    						curNode = curNode.right;
-    					}
-    					else {
-    						result.add(curNode.val);
-    						curNode = nodeList.remove(nodeList.size()-1);
-    						isPopped = true;
-    						curNode = nodeList.get(nodeList.size()-1);
-    						if (curNode == root) {
-    							if (!hasWalkRightSide)
-    								hasWalkRightSide = true;
-    							else {
-    								result.add(curNode.val);
-    								break;
-    							}
-    						}
-    					}
+    				curNode = nodeList.remove(nodeList.size()-1);
+    				if (curNode.left == lastCurNode) {
+    					curNode.left = null;
     				}
     				else {
-						result.add(curNode.val);
-						curNode = nodeList.remove(nodeList.size()-1);
-						curNode = nodeList.get(nodeList.size()-1);
-						isPopped = true;    					
+    					curNode.right = null;
     				}
     			}
-    			else curNode = null;
+    			else
+    				curNode = null;
+    			continue;
     		}
-    		else if (curNode.left != null && !isPopped) {
+    		else if (curNode.left != null) {
     			nodeList.add(curNode);
     			curNode = curNode.left;
-    			isPopped = false;
     		}
     		else {
-    			if (!isPopped)
-    				nodeList.add(curNode);
+    			nodeList.add(curNode);
     			curNode = curNode.right;
-    			isPopped = false;
     		}
-
     	} 
         return result;
     }
