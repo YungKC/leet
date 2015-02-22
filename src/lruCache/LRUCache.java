@@ -110,6 +110,7 @@ public class LRUCache {
     	if (map.keySet().contains(key)) {
     		ValueHolder valueHolder = map.get(key);
     		valueHolder.value = value;
+    		cacheList.moveToTail(valueHolder.node);
     		return;
     	}
     	
@@ -135,7 +136,7 @@ public class LRUCache {
 		cache.set(4, 1);
 		result.add(cache.get(1));
 		result.add(cache.get(2));
-		printList(result);
+		printList(result); // [-1, 3]
 
 
 		result = new ArrayList<Integer>();
@@ -146,7 +147,7 @@ public class LRUCache {
 		cache.set(4, 1);
 		result.add(cache.get(1));
 		result.add(cache.get(2));
-		printList(result);
+		printList(result); // [1 -1 1]
 
 		cache= new LRUCache(1);		
 		cache.set(1, 1);
