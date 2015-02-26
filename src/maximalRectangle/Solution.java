@@ -27,34 +27,44 @@ public class Solution {
     	if (matrix[0].length == 0)
     		return 0;
     	
-    	int[] len = new int[maxCol];
+    	int[] start = new int[maxCol];	// value starts at 1 instead of 0 to differentiate it from the default value of 0 when the array is initialized
+    	int[] end = new int[maxCol];
     	int[] height = new int[maxCol];
     	
     	for (int r=0; r<maxRow; r++) {
     		for (int c=0; c<maxCol; c++) {
     			if (matrix[r][c] == one) {
     				height[c]++;
-    				if (c==0 || matrix[r][c-1] == zero)
-    					len[c] = 1;
+    				if (c==0 || matrix[r][c-1] == zero) {
+    					start[c] = c+1;		// make it starts at index 1 to differentiate it from the default value of 0
+    				}
     				else
-    					len[c] = len[c-1]+1;
+    					start[c] = start[c-1];
     			}
     			else {
     				height[c] = 0;
-    				len[c] = 0;
+    				for (int lastC=c-1; lastC >=0 && start[lastC] != 0; lastC--)
+    					end[lastC] = c;		// make it starts at index 1 to differentiate it from the default value of 0
     			}
     		}
+
+    		// find length across where height >= height[c]
     		for (int c=0; c<maxCol; c++) {
-    			// find max height from c-len[c] to c
-    			if (height[c] == 0 || len[c] == 0)
+    			int curHeight = height[c];
+    			if (curHeight == 0)
     				continue;
-    			int maxHeight = Integer.MAX_VALUE;
-    			for (int innerC = c-len[c]+1; innerC <= c; innerC++)
-    				if (maxHeight > height[innerC])
-    					maxHeight = height[innerC];
-    			if (height[c] != 0 && len[c]*maxHeight > maxSize)
-    				maxSize = len[c]*maxHeight;
+    			int length = 1;
+    			for(int i=1; c+1-i >= start[c] && height[c-i] >= curHeight ; i++) {
+    				length++;
+    			}
+    			for(int i=1; c+1+i <= end[c] && height[c+i] >= curHeight; i++) {
+    				length++;
+    			}
+    			if (length * curHeight > maxSize) {
+    				maxSize = length * curHeight;
+    			}
     		}
+
     	}	
     	return maxSize;
     	
@@ -63,6 +73,7 @@ public class Solution {
 	public static void main(String[] args) {
 		Solution sol = new Solution();
 		
+		System.out.println(sol.maximalRectangle(new char[][]{s("0110111111111111110"),s("1011111111111111111"),s("1101111111110111111"),  s("1111111111111011111"),s("1111111111111101111"),s("1110111011111111101"),  s("1011111111111101111"),s("1111111111111110110"),s("0011111111111110111"),  s("1101111111011111111"),s("1111111110111111111"),s("0110111011111111111"),  s("1111011111111101111"),s("1111111111111111111"),s("1111111111111111111"),  s("1111111111111111101"),s("1111111101101101111"),s("1111110111111110111")})==51);		
 		System.out.println(sol.maximalRectangle(new char[][]{s("1011"),s("1011"),s("0110")})==4);		
 		System.out.println(sol.maximalRectangle(new char[][]{s("01101"),s("11010"),s("01110"),s("11110"),s("11111"),s("00000")})==9);		
 		System.out.println(sol.maximalRectangle(new char[][]{s("0010"),s("1111"),s("1111"),s("1110"),s("1100"),s("1111"),s("1110")})==12);
@@ -72,11 +83,37 @@ public class Solution {
 		System.out.println(sol.maximalRectangle(new char[][]{{one,zero,one,one},{one,zero,one,one}})==4);		
 		System.out.println(sol.maximalRectangle(new char[][]{{one,zero,one,one},{one,zero,one,one},{zero,one,one,one}})==6);		
 		System.out.println(sol.maximalRectangle(new char[][]{{one,zero}})==1);
-
 	}
 
 	private static char[] s(String string) {
 		return string.toCharArray();
 	}
 
+	
+	
 }
+/*
+    1234567890123456789
+
+1	0110111111111111110
+2	1011111111111111111
+3	1101111111110111111
+4	1111111111111011111
+5	1111111111111101111
+6	1110111011111111101
+7	1011111111111101111
+8	1111111111111110110
+9	0011111111111110111
+0	1101111111011111111
+1	1111111110111111111
+2	0110111011111111111
+3	1111011111111101111
+4	1111111111111111111
+5	1111111111111111111
+6	1111111111111111101
+7	1111111101101101111
+8	1111110111111110111
+
+
+
+*/
