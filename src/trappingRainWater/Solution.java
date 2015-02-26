@@ -23,6 +23,7 @@ use a stack to push last peak index. Height can be retrieved from A[index]
 public class Solution {
     public int trap(int[] A) {
     	
+    	
     	if (A == null || A.length == 2)
     		return 0;
     	
@@ -37,13 +38,12 @@ public class Solution {
         if (curLeft == curRight)
         	return 0;
         
-        int edgeHeight = A[curLeft] < A[curRight] ? A[curLeft] : A[curRight];
+        int totalRain = 0;
         
         // populate the stack with location of each peaks
     	List<Integer> heightStack = new ArrayList<Integer>();    
     	
-    	// no need to place the first peak in my algorithm
-    	// heightStack.add(curLeft);
+    	heightStack.add(curLeft);
     	   		 
     	do {
     		while (++curLeft < curRight && A[curLeft] < A[curLeft-1]);
@@ -56,16 +56,29 @@ public class Solution {
     	heightStack.add(curRight);
         
     	// repeatedly get the next peak in list
-    	int curListIndex = 0;
+    	int lastPeakIndex = heightStack.get(0);
+    	int edgeHeight = A[lastPeakIndex];
+    	int curListIndex = 1;
     	while (curListIndex < heightStack.size()) {
     		int nextIndex = heightStack.get(curListIndex);
-    		
+    		int indexHeight = A[nextIndex];
+    		if (indexHeight >= edgeHeight) {
+    			// sum up all rain heights from curListIndex toward left until higher peak or reached left end
+    			for (int i = lastPeakIndex+1; i<= curListIndex; i++) {
+    				totalRain += edgeHeight - A[i];
+    				A[i] = edgeHeight;
+    			}
+    			edgeHeight = indexHeight;
+    		}
+    		curListIndex++;
     	}
 
+    	return totalRain;
     }
 	public static void main(String[] args) {
 		Solution sol = new Solution();
 		
+		System.out.println(sol.trap(new int[]{1,0,1}) == 1);
 		System.out.println(sol.trap(new int[]{0,1,0,2,1,0,1,3,2,1,2,1}) == 6);
 
 	}
