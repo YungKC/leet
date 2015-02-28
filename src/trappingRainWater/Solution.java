@@ -20,7 +20,7 @@ for each subsequent peak,
 	if current peak is higher than last peak, 
 		then add up the collected rain from this peak leftward, and reset tallest peaks
 
-At the end, the water level is same as the right peak, so add up rain water from last tallest peak to this right peak.
+At the end, the peaks are always highest to lowest, so walk the path right to left, while determining the proper water level height.
 
  */
 public class Solution {
