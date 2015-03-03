@@ -1,7 +1,5 @@
 package medianTwoSortedArrays;
 
-import java.util.ArrayList;
-import java.util.List;
 
 
 /*
@@ -34,8 +32,7 @@ public class Solution {
     		return median(A);
     	}
     	
-    	int longer[];
-    	int shorter[];
+    	int longer[], shorter[];
     	if (A.length > B.length) {
     		longer = A;
     		shorter = B;
@@ -81,9 +78,6 @@ public class Solution {
      	int longerLeft=0, shorterLeft=0, longerRight=longer.length-1, shorterRight=shorter.length-1;
    		int totalLength = longer.length + shorter.length;
    		boolean isTotalLengthOdd = totalLength%2 == 1;
-   		int idealNumLeftElements = totalLength/2;
-   		if (!isTotalLengthOdd)
-   			idealNumLeftElements--;
    		
      	// [1 2], [4 5]
     	if (shorter[shorterRight] <= longer[longerLeft]) {
@@ -123,142 +117,76 @@ public class Solution {
     	
     	int medianLongerIndex = 0;
     	int medianValue = 0;
-    	int smallerShortIndex = 0;
-    	int biggerShortIndex = 0;
-    	int numLeftElements = 0;
-    	boolean foundWindow = false;
-     	do {
-   			medianLongerIndex = (longerLeft + longerRight)/2;
-	    	medianValue = longer[medianLongerIndex];
-	    	smallerShortIndex = findSmallestLeftElementSize(shorter, medianValue);
-	    	numLeftElements = smallerShortIndex + medianLongerIndex;
+    	int numElementsMoreOnRight = 0;
 
-	    	if (numLeftElements > idealNumLeftElements) {
-	    		longerRight = medianLongerIndex;
+     	for (;;) {
+   			medianLongerIndex = (longerLeft + longerRight)/2; // for even array, median is leaning on the left
+	    	medianValue = longer[medianLongerIndex];
+	    	// find the best candidate so that the left size from shorter array compensates for the input length, true if want value <= 0
+	    	// matchResult[0] == num elements on the left of the returned value
+	    	// matchResult[1] == index value of the returned value
+	    	// matchResult[2] == value at that position
+	    	numElementsMoreOnRight = longer.length-1-2*medianLongerIndex;
+	    	int[] matchResult = findBestElementWithRightSize(shorter, medianValue, numElementsMoreOnRight, true);
+	    	int numMoreOnRight = numElementsMoreOnRight - matchResult[0];
+	    	if (numMoreOnRight == 0) {
+	    		// done!
+	    		return medianValue;
 	    	}
-	    	else if (numLeftElements + 2 >= idealNumLeftElements) {
-		    	// see if we move the longer index to 1 step right, that the sign changes. then that means we found the window
-	    		int nextMedianValue = longer[medianLongerIndex+1];
-	    		biggerShortIndex = findBiggestRightElementSize(shorter, nextMedianValue);
-	    		int biggerNumLeftElements = biggerShortIndex + medianLongerIndex + 1;
-	    		if (biggerNumLeftElements >= idealNumLeftElements) {
-	    			foundWindow = true;
-	    		}
-	    		else {
-	    			longerLeft = medianLongerIndex;
-	    		}
+	    	else if (numMoreOnRight > 0 && numMoreOnRight < shorter.length - matchResult[0]) {
+	    		int nextMedianLongerIndex = medianLongerIndex+1;
+	    		int nextNumRightElements = longer.length-1-2*nextMedianLongerIndex;
+		    	int[] nextMatchResult = findBestElementWithRightSize(shorter, longer[nextMedianLongerIndex], nextNumRightElements, false);
+		    	int nextNumMoreOnRight = nextNumRightElements - nextMatchResult[0];
+		    	if (nextNumMoreOnRight == 0) {
+		    		return longer[nextMedianLongerIndex]; 
+		    	}
+		    	else if (nextNumMoreOnRight < 0) {
+		    		if (isTotalLengthOdd) {
+		    			// either shorter[matchResult[2]] or shorter[nextMatchResult[2]];
+		    			nextNumRightElements = shorter.length-1-2*nextMatchResult[1];
+		    			nextMatchResult = findBestElementWithRightSize(longer, shorter[nextMatchResult[1]], nextNumRightElements, true);
+		    			if (nextMatchResult[0] == 0)
+		    				return nextMatchResult[2];
+		    			else
+		    				return matchResult[2];
+		    		}
+		    		else if (medianLongerIndex < longer.length-1){
+		    			// average of the inner 2 values of 
+		    			// 	shorter[matchResult[2]], shorter[nextMatchResult[2]]
+		    			//	longer[medianLongerIndex], longer[medianLongerIndex+1];
+		    			int value1 = Math.max(matchResult[2], longer[medianLongerIndex]);
+		    			int value2 = Math.min(nextMatchResult[2], longer[medianLongerIndex+1]);
+		    			return (value1+value2)/2.0;
+		    		}
+		    	}
 	    	}
-	    	else {
+	    	if (numMoreOnRight > 0) {
 	    		longerLeft = medianLongerIndex;
 	    	}
-		} while (!foundWindow);
-//    	System.out.println("foundWindow at " + medianLongerIndex + " with value " + medianValue);
+	    	else {
+	    		longerRight = medianLongerIndex;
+	    	}
+		}
 
-//    	medianLongerIndex
-//    	medianValue
-//    	smallerShortIndex
-//     	numLeftElements
-// 		isTotalLengthOdd
-   		
-// mean is calculated from combination of 
-//     	longer[medianLongerIndex], longer[medianLongerIndex+1], 
-//     	and any values between shorter[smallerShortIndex] and shorter[biggerShortIndex]
-     	
-     	if (isTotalLengthOdd) {
-     		if (numLeftElements == idealNumLeftElements)
-     			return longer[medianLongerIndex];
-     		else
-     			return shorter[smallerShortIndex];
-     	}
-     	else {
-     		List<Integer> zeroSolution = new ArrayList<Integer>();
-     		List<Integer> negOneSolution = new ArrayList<Integer>();
-     		List<Integer> oneSolution = new ArrayList<Integer>();
-     		
-     		// now need to cycle through possible shortArray values to see which is a better median
-// TODO: create method to return numbers of left and right elements from an array for a given value     		
-     		int result = idealNumLeftElements - (medianLongerIndex + biggerShortIndex);
-     		System.out.println(longer[medianLongerIndex] + " : " + result);
-     		if (result == 0) {
-     			zeroSolution.add(longer[medianLongerIndex]);
-     		}
-     		else if (result == -1) {
-     			negOneSolution.add(longer[medianLongerIndex]);
-     		}
-     		else if (result == 1) {
-     			oneSolution.add(longer[medianLongerIndex]);
-     		}
-     		
-     		int tmp = findSmallestLeftElementSize(shorter, longer[medianLongerIndex+1]);
-     		result = idealNumLeftElements - (medianLongerIndex + 1 + tmp);
-     		System.out.println(longer[medianLongerIndex+1] + " : " + result);
-     		if (result == 0) {
-     			zeroSolution.add(longer[medianLongerIndex+1]);
-     		}
-     		else if (result == -1) {
-     			negOneSolution.add(longer[medianLongerIndex+1]);
-     		}
-     		else if (result == 1) {
-     			oneSolution.add(longer[medianLongerIndex+1]);
-     		}
-     		
-     		for (int i=smallerShortIndex; i<=biggerShortIndex && i<shorter.length; i++) {
-     			tmp = findSmallestLeftElementSize(longer, shorter[i]);
-     			result = idealNumLeftElements - (tmp + i);
-     			System.out.println(shorter[i] + " : " + result);
-         		if (result == 0) {
-         			zeroSolution.add(shorter[i]);
-         		}
-         		else if (result == -1) {
-         			negOneSolution.add(shorter[i]);
-         		}
-         		else if (result == 1) {
-         			oneSolution.add(shorter[i]);
-         		}
-     		}
-         	
-     		int count=0;
-     		int total = 0;
-     		for (int value : zeroSolution) {
-     			if (count < 2) {
-	     			total += value;
-	     			count++;
-     			}
-     		}
-     		for (int value : negOneSolution) {
-     			if (count < 2) {
-	     			total += value;
-	     			count++;
-     			}
-     		}
-     		for (int value : oneSolution) {
-     			if (count < 2) {
-	     			total += value;
-	     			count++;
-     			}
-     		}
-     		return total/2.0;
-
-     	}
     }
 
     
-    // return the smallest numbers of elements possible left of medianValue
-    private int findSmallestLeftElementSize(int[] array, int medianValue) {
+	// find the best candidate so that the left size from shorter array compensates for the input length, true if want value <= 0
+	// matchResult[0] == num elements on the left of the returned value
+	// matchResult[1] == index value of the returned value
+	// matchResult[2] == value at that position
+    private int[] findBestElementWithRightSize(int[] array, int medianValue, int idealNumElementsMoreOnLeft, boolean isLeanOnLeft) {
+    	
     	int right = array.length-1;
-    	if (medianValue > array[right])
-    		return array.length;
+    	if (medianValue > array[right]) {
+    		return new int[]{array.length, array.length-1, array[array.length-1]};
+    	}
+    	else if (medianValue < array[0]) {
+    		return new int[]{0, 0, array[0]};
+    	}
     	int left = 0;
-    	if (medianValue >= array[right]) {
-    		int result = right;
-    		while (medianValue == array[result-1]) {
-    			result--;
-    		}
-    		return result;
-    	}
-    	else if (medianValue <= array[0]) {
-    		return 0;
-    	}
+
     	while (right - left > 1) {
         	int median = (left+right)/2;
     		if (array[median] > medianValue)
@@ -266,43 +194,27 @@ public class Solution {
     		else if (array[median] <= medianValue) 
     			left = median;
     	}
-		while (left > 0 && medianValue == array[left-1]) {
-			left--;
-		}
-		while (left < array.length-1 && array[left] < medianValue) {
-			left++;
-		}
-		return left;
-    }
     	
-    // return the largest numbers of elements possible left of medianValue
-    private int findBiggestRightElementSize(int[] array, int medianValue) {
-    	int right = array.length-1;
-    	int left = 0;
-    	if (medianValue >= array[right]) {
-    		return array.length;
-    	}
-    	else if (medianValue <= array[0]) {
-    		int result = 0;
-    		while (medianValue == array[result+1]) {
-    			result++;
+    	if (array[left] == medianValue) {
+    		if (2*left + 1 - array.length < idealNumElementsMoreOnLeft) {
+    			while (left < array.length - 1 && 2*left + 1 - array.length < idealNumElementsMoreOnLeft && array[left+1] == medianValue) {
+    				left++;
+    			}
     		}
-    		return result;
+    		else if (2*left + 1 - array.length> idealNumElementsMoreOnLeft) {
+    			while (left > 0 && 2*left + 1 - array.length > idealNumElementsMoreOnLeft && array[left-1] == medianValue) {
+    				left--;
+    			}
+    		}
+    		return new int[]{2*left + 1 - array.length, left, medianValue};
     	}
-    	while (right - left > 1) {
-        	int median = (left+right)/2;
-    		if (array[median] >= medianValue)
-    			right = median;
-    		else if (array[median] < medianValue) 
-    			left = median;
+    	
+    	if (isLeanOnLeft) {
+    		return new int[]{2*right - array.length, left, array[left]};
     	}
-		while (right < array.length-1 && medianValue == array[right+1]) {
-			right++;
-		}
-		if (medianValue == array[right])
-			return 	right+1;
-		else
-			return right;
+    	else {
+    		return new int[]{2*right - array.length, right, array[right]};
+    	}
     }
     	    
     private double median(int[] array) {
@@ -316,18 +228,18 @@ public class Solution {
 	public static void main(String[] args) {
 		Solution sol = new Solution();
 
-		
-//		System.out.println(sol.findSmallestLeftElementSize(new int[]{1,4,5,6}, 4) == 1);
-//		System.out.println(sol.findSmallestLeftElementSize(new int[]{1,4,5,6}, 3) == 1);
-//		System.out.println(sol.findBiggestRightElementSize(new int[]{1,4,5,6}, 4) == 2);
-//		System.out.println(sol.findBiggestRightElementSize(new int[]{1,4,5,6}, 3) == 1);
+//		System.out.println(sol.findBestElementWithRightSize(new int[]{1,2,3,5,6}, 4, 1, true)[0] == 1);
+//		System.out.println(sol.findBestElementWithRightSize(new int[]{1,2,3,5,6}, 4, 0, false)[0] == 1);
+//		System.out.println(sol.findBestElementWithRightSize(new int[]{1,2,3,3,4}, 3, 0, true)[0] == 0);
+//		System.out.println(sol.findBestElementWithRightSize(new int[]{1,2,3,3,4}, 3, 2, true)[0] == 2);
 
 		System.out.println(sol.findMedianSortedArrays(new int[]{1,2,4}, new int[]{3,5,6,7,8}) == 4.5);
+		
+		System.out.println(sol.findMedianSortedArrays(new int[]{1,2,4}, new int[]{3,5,6}) == 3.5);
 		
 		System.out.println(sol.findMedianSortedArrays(new int[]{1,2,3}, new int[]{4,5,6,7,8}) == 4.5);
 		System.out.println(sol.findMedianSortedArrays(new int[]{1,2,3}, new int[]{4,5,6}) == 3.5);
 		
-		System.out.println(sol.findMedianSortedArrays(new int[]{1,2,4}, new int[]{3,5,6}) == 3.5);
 		System.out.println(sol.findMedianSortedArrays(new int[]{1,2,3}, new int[]{1,4,5,6,7,8}) == 4);
 		
 		System.out.println(sol.findMedianSortedArrays(new int[]{2,10}, new int[]{1,2,3,4,5,6,7,8,9,10}) == 5.5d);
