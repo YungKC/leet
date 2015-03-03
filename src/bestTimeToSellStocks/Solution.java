@@ -1,6 +1,7 @@
 package bestTimeToSellStocks;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /*
@@ -32,15 +33,26 @@ public class Solution {
     public int maxProfit(int k, int[] prices) {
 
     	int priceLength = prices.length;
+
     	if (prices == null || priceLength < 2)
     		return 0;
 
     	List<Integer> priceDrops = new ArrayList<Integer>();
-    	int lastHigh = prices[0];
-    	int lastLow = prices[0];
+    	// find the first entry point where the price is at a low
+
     	int netProfit = 0;
     	int maxProfit = 0;
-    	int index = 1;    	
+
+    	int index = 0;
+    	while (index < priceLength-1 && prices[index] >= prices[index+1]) {
+    		index++;
+    	}
+    	
+    	if (index == 0)
+    		index++;
+    	
+    	int lastHigh = prices[index-1];
+    	int lastLow = prices[index-1];
     	while (index < priceLength) {
     		while (index < priceLength && prices[index-1] <= prices[index]) {
     			index++;
@@ -59,20 +71,36 @@ public class Solution {
 			netProfit -= priceDrop;
 			
 			// reset if we are now in the red.
+			// be careful here.
+			// If the maxProfit occurs in this stretch, store the list of drops in a holding list,
+			// if not in this stretch, save all the other possible run ups to maximize profits
 			if (netProfit <= 0) {
 				priceDrops = new ArrayList<Integer>();
 				netProfit = 0;
 			}
     	}
     	
+    	Collections.sort(priceDrops);
+    	
+    	// if k is odd, then we ignore that buy transaction.
+    	int numPairedCorrections = k/2 - 1;
+    	int numDropsMinus1 = priceDrops.size() - 1;
+    	for (int i=0; i<numPairedCorrections && numDropsMinus1 >= i; i++) {
+    		maxProfit += priceDrops.get(numDropsMinus1 - i);
+    	}
     	return maxProfit;
     }
     
 	public static void main(String[] args) {
 		Solution sol = new Solution();
 		
+		System.out.println(sol.maxProfit(2, new int[]{2,1,2,0,1}) == 2);
+		System.out.println(sol.maxProfit(10, new int[]{30,10,30,0,40,10,30,20,40,30,70}) == 120);
+		System.out.println(sol.maxProfit(10, new int[]{10,30,0,40,10,30,20,40,30,70}) == 120);
+		System.out.println(sol.maxProfit(1, new int[]{10,30,0,40,10,30,20,40,30,70}) == 70);
 		System.out.println(sol.maxProfit(10, new int[]{10,30,0,40}) == 40);
-		System.out.println(sol.maxProfit(10, new int[]{10,30,20,40}) == 30);
+		System.out.println(sol.maxProfit(10, new int[]{10,30,20,40}) == 40);
+		System.out.println(sol.maxProfit(1, new int[]{10,30,20,40}) == 30);
 		System.out.println(sol.maxProfit(10, new int[]{10,30}) == 20);
 
 	}
