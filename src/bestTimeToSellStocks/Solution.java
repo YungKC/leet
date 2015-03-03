@@ -27,6 +27,8 @@ if the net drops below 0, then one can ignore previous history and starts anew.
 
 then for k' = k_previous + 2, the increase in net profit is the negative of the next biggest drop.
 
+since k can be big, we need to store all known bull runs and each price drop. Sort this list by potential gains.
+
  */
 public class Solution {
 
