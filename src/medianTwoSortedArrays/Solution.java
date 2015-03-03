@@ -133,7 +133,7 @@ public class Solution {
 	    		// done!
 	    		return medianValue;
 	    	}
-	    	else if (numMoreOnRight > 0 && numMoreOnRight < shorter.length - matchResult[0]) {
+	    	else if (numMoreOnRight > 0 && numMoreOnRight < 2*(shorter.length - matchResult[0])) {
 	    		int nextMedianLongerIndex = medianLongerIndex+1;
 	    		int nextNumRightElements = longer.length-1-2*nextMedianLongerIndex;
 		    	int[] nextMatchResult = findBestElementWithRightSize(shorter, longer[nextMedianLongerIndex], nextNumRightElements, false);
