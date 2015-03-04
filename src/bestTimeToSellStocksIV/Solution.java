@@ -16,116 +16,121 @@ You may not engage in multiple transactions at the same time (ie, you must sell 
 
 Idea:
 
-find each stock rise segment
-a drop will negate previous positive segments, when trying to find best entry/exit point for 1 transaction
+find boundary of time from lowestPrice to highestPrice
+for this group, 
+	p_high - p_low is a profit potential
+	each price drop segment is a profit potential
+for all price point before this group, repeat step above
+for all price pints after this group, repeat step above
 
-I assume that we do not support trading via buying shorts. That is, one has to buy first before selling.
-if k is odd, then the last sold price can be considered as the very last price.
 
-if k=2 then it's the max difference between any rise (with potential drops in between)
-if the net drops below 0, then one can ignore previous history and starts anew.
-
-then for k' = k_previous + 2, the increase in net profit is the negative of the next biggest drop.
-
-since k can be big, we need to store all known bull runs and each price drop. Sort this list by potential gains.
-
-cannot count a price drop as a potential if it occurs between bull runs
-
-for any bull runs that ran up to a max, then series ends or dropped to negative gain, we need to include the potential profit from end of that peak.
  */
 public class Solution {
 
-    public int maxProfit(int k, int[] prices) {
-
-    	int priceLength = prices.length;
-
-    	if (prices == null || priceLength < 2)
+	List<Integer> acceptedProfitPotential;
+	
+	public int maxProfit(int k, int[] prices) {
+		
+    	if (prices == null || prices.length < 2 || k == 0)
     		return 0;
-
-    	// find the first entry point where the price is at a low
+    	
+    	
+    	// optimization
+    	// squeeze all increasing or decreasing series into 1 entry
+    	int[] squeezedPrices = new int[prices.length];
+    	int squeezedIndex = 0;
     	int index = 0;
-    	while (index < priceLength-1 && prices[index] >= prices[index+1]) {
+    	while (prices[index] >= prices[index+1]) {
     		index++;
     	}
-    	
-    	if (index == 0)
-    		index++;
-
-    	List<Integer> acceptedProfitPotential = new ArrayList<Integer>();
-
-    	int lastHigh = prices[index-1];
-    	int lastLow = prices[index-1];
-    	
-    	int netProfit = 0;
-    	int maxProfit = 0;
-    	List<Integer[]> curRunProfitPotential = new ArrayList<Integer[]>();	// price drop object, 0=value, 1=index
-    	int indexMaxProfitCurrentBullRun = Integer.MIN_VALUE;
-    	
-    	while (index < priceLength) {
-    		while (index < priceLength && prices[index-1] <= prices[index]) {
-    			index++;
-    		}
-    		lastHigh = prices[index-1];
-    		netProfit += lastHigh - lastLow;
-    		if (netProfit  > maxProfit) {
-    			maxProfit = netProfit;
-    			indexMaxProfitCurrentBullRun = index-1;
-    		}
-			while (index < priceLength && prices[index-1] >= prices[index]) {
-				index++;
-			}
-			int priceDrop = lastHigh-prices[index-1];
-			curRunProfitPotential.add(new Integer[]{priceDrop, index-1});
-			lastLow = prices[index-1];
-			netProfit -= priceDrop;
-			
-			// reset if we are now in the red.
-			// be careful here.
-			// If the maxProfit occurs in this stretch, store the list of drops in a holding list,
-			// if not in this stretch, save all the other possible run ups to maximize profits
-			if (netProfit <= 0) {
-		    	tally(maxProfit, indexMaxProfitCurrentBullRun, acceptedProfitPotential, curRunProfitPotential);
-				maxProfit = 0;
-				netProfit = 0;
-				curRunProfitPotential = new ArrayList<Integer[]>();
-				indexMaxProfitCurrentBullRun = Integer.MIN_VALUE;
-			}
+    	squeezedPrices[squeezedIndex++] = prices[index++];
+    	int sign = 1;
+    	while (index < prices.length) {
+	    	while (index < prices.length && prices[index] <= sign * prices[index-1]) {
+	    		index++;
+	    	}
+	    	if (index < prices.length) {
+			    squeezedPrices[squeezedIndex++] = prices[index++];
+			    sign *= -1;
+	    	}
     	}
-    	tally(maxProfit, indexMaxProfitCurrentBullRun, acceptedProfitPotential, curRunProfitPotential);
+    	
+    	int startIndex = 0;
+    	int endIndex = squeezedIndex-1;
+    	if (endIndex == 0)
+    		return 0;
+    	
+    	// make sure starting and ending is increasing
+    	if (squeezedPrices[0] >= squeezedPrices[1]) {
+    		startIndex = 1;
+    	}
+    	if (squeezedPrices[endIndex] <= squeezedPrices[endIndex-1]) {
+    		endIndex--;
+    	}
 
-		// need to add up all possible gains after the last bull run
-    	maxProfit = 0;
+    	acceptedProfitPotential = new ArrayList<Integer>();
+
+    	searchBullCycleRecursive(squeezedPrices, startIndex, endIndex);
+		int result = 0;
+    	int sizeOfPotentialMinus1 = acceptedProfitPotential.size() - 1;
+    	int numTransactions = Math.min(k, sizeOfPotentialMinus1+1);
+
     	Collections.sort(acceptedProfitPotential);
-    	
-    	int maxPotentialIndex = acceptedProfitPotential.size() - 1;
-    	for (int i=0; i<k && i<=maxPotentialIndex; i++) {
-    		maxProfit += acceptedProfitPotential.get(maxPotentialIndex - i);
+    	for (int i=0; i<numTransactions; i++) {
+    		result += acceptedProfitPotential.get(sizeOfPotentialMinus1-i);
     	}
-    	return maxProfit;
-    }
-    
-    private static void tally(int maxProfit, int indexMaxProfitCurrentBullRun, List<Integer> acceptedProfitPotential, List<Integer[]> curRunProfitPotential) {
-		if (maxProfit > 0)
-			acceptedProfitPotential.add(maxProfit);
-		for (Integer[] potential : curRunProfitPotential) {
-			if (potential[1] < indexMaxProfitCurrentBullRun && potential[0] > 0) {
-				acceptedProfitPotential.add(potential[0]);
+    	return result;
+		
+	}
+	
+	private void searchBullCycleRecursive(int[] prices, int startIndex, int endIndex) {
+		// find the lowest and highest price index
+		int lowest = prices[startIndex];
+		int lowestIndex = startIndex;
+		
+		// note the equal signs to ensure we have the tightest bull cycle, and lowest index <= highest index
+		for (int i = startIndex+1; i <= endIndex; i++) {
+			if (prices[i] <= lowest) {
+				lowestIndex = i;
+				lowest = prices[i];
 			}
 		}
-    }
+		int highest = prices[lowestIndex];
+		int highestIndex = lowestIndex;
+		for (int i = lowestIndex+1; i<= endIndex; i++) {
+			if (prices[i] > highest) {
+				highestIndex = i;
+				highest = prices[i];
+			}
+		}
+		if (highest != lowest)
+			acceptedProfitPotential.add(highest-lowest);
+		
+		// every other is a drop. e.g., 3, 5, 4 , ....
+		for (int i = lowestIndex+1; i<highestIndex; i+=2) {
+			acceptedProfitPotential.add(prices[i]-prices[i+1]);
+		}
+		if (startIndex < lowestIndex-1)
+			searchBullCycleRecursive(prices, startIndex, lowestIndex-1);
+		if (endIndex > highestIndex+1)
+			searchBullCycleRecursive(prices, highestIndex+1, endIndex);		
+	}
+
     
 	public static void main(String[] args) {
 		Solution sol = new Solution();
 		
-		System.out.println(sol.maxProfit(5, new int[]{1,7,2,4}) == 8);
+		System.out.println(sol.maxProfit(5, new int[]{30,10,30,0,40,10,30,20,40,30,70,60,50,40,30}) == 140);
+		System.out.println(sol.maxProfit(5, new int[]{30,10,30,0,40,10,30,20,40,30,70,80,85,86}) == 156);
+		System.out.println(sol.maxProfit(5, new int[]{30,10,30,0,40,10,30,20,40,30,70}) == 140);
+		System.out.println(sol.maxProfit(5, new int[]{10,30}) == 20);
 		System.out.println(sol.maxProfit(5, new int[]{1,7,2,4,3,5}) == 10);
 		System.out.println(sol.maxProfit(5, new int[]{10,30,0,40,10,30,20,40,30,70}) == 140);
-		System.out.println(sol.maxProfit(5, new int[]{30,10,30,0,40,10,30,20,40,30,70}) == 140);
 		System.out.println(sol.maxProfit(1, new int[]{10,30,0,40,10,30,20,40,30,70}) == 70);
 		System.out.println(sol.maxProfit(5, new int[]{10,30,20,40}) == 40);
 		System.out.println(sol.maxProfit(1, new int[]{10,30,20,40}) == 30);
-		System.out.println(sol.maxProfit(5, new int[]{10,30}) == 20);
 		System.out.println(sol.maxProfit(2, new int[]{2,1,2,0,1}) == 2);
+		System.out.println(sol.maxProfit(5, new int[]{1,7,2,4}) == 8);
 		System.out.println(sol.maxProfit(5, new int[]{10,30,0,40}) == 60);
 
 	}
