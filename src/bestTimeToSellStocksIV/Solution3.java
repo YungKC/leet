@@ -36,6 +36,9 @@ public class Solution3 {
 	int numElements = 0;
 	int minProfits = Integer.MAX_VALUE;
 	
+	Set<BullRunNode> usedBullRunSet;
+	Map<BullRunNode, List<BullRunNode>> pendingSwap;
+	
 	public int maxProfit(int k, int[] prices) {
 		
     	if (prices == null || prices.length < 2 || k == 0)
@@ -87,71 +90,86 @@ public class Solution3 {
     	
     	searchBullCycleRecursive(bullRunNode, startIndex, endIndex);
 		int result = 0;
-    	int sizeOfPotentialMinus1 = acceptedProfitPotential.size() - 1;
 
     	Set<BullRunNode> usedBullRunSet = new HashSet<BullRunNode>();
-    	Map<BullRunNode, List<BullRunNode>> pendingSwap = new HashMap<BullRunNode, List<BullRunNode>>();
+    	pendingSwap = new HashMap<BullRunNode, List<BullRunNode>>();
     	Collections.sort(acceptedProfitPotential);
     	int netTransactions = 0;
-    	for (int i=0; i<=sizeOfPotentialMinus1 && netTransactions < k; i++) {
-    		BullRunNode bullRun = acceptedProfitPotential.get(sizeOfPotentialMinus1-i);
-    		if (usedBullRunSet.contains(bullRun.parent)) {
-    			List<BullRunNode> children = pendingSwap.get(bullRun.parent);
-    			if (children == null) {
-    				children = new ArrayList<BullRunNode>();
-    				children.add(bullRun);
-    				pendingSwap.put(bullRun.parent, children);
-    			}
-    			else {
-    				children.add(bullRun);
-    				int childrenProfitTotal = 0;
-    				for (BullRunNode child : children) {
-    					childrenProfitTotal += child.profit;
-    				}
-    				// swap only if the children total adds up to parent and the next biggest profit.
-    				// realistically, we should only tally the 2 biggest children, but for smaller k values, this hack will do
-    				if (sizeOfPotentialMinus1 == i || childrenProfitTotal > bullRun.parent.profit + acceptedProfitPotential.get(sizeOfPotentialMinus1-i-1).profit) {
-    	    			result -= bullRun.parent.profit;
-//    	        		System.out.println(" removed " + bullRun.parent.profit + " with balance of  " + result);
-    	        		pendingSwap.remove(bullRun.parent);
-    	    			usedBullRunSet.remove(bullRun.parent);
-    	    			netTransactions--;
-    	    			result += childrenProfitTotal;
-//    	        		System.out.println(" replaced by children profits of  " + childrenProfitTotal + " with balance of  " + result);
-    	        		netTransactions += children.size();
-    	        		for (BullRunNode child : children) {
-    	        			usedBullRunSet.add(child);
-        				} 
-    				}
-    			}
+    	BullRunNode bullRun = null;
+    	while(netTransactions < k) {
+    		if (acceptedProfitPotential.size() > 0) {
+    			bullRun = acceptedProfitPotential.remove(0);
+        		BullRunNode ancestor = getAncestorInUse(bullRun);
+        		if (ancestor != null) {
+    				pendingSwap.put(bullRun, new ArrayList<BullRunNode>());
+        			List<BullRunNode> children = pendingSwap.get(bullRun.parent);
+        			if (children == null) {
+        				children = new ArrayList<BullRunNode>();
+        				children.add(bullRun);
+        				pendingSwap.put(bullRun.parent, children);
+        			}
+        			else {
+        				children.add(bullRun);
+        				int childrenProfitTotal = 0;
+        				for (BullRunNode child : children) {
+        					childrenProfitTotal += child.profit;
+        				}
+        				// swap only if the children total adds up to parent and the next biggest profit.
+        				if (acceptedProfitPotential.size() <= 0 || childrenProfitTotal > bullRun.parent.profit + acceptedProfitPotential.get(0).profit) {
+        	    			result -= bullRun.parent.profit;
+        	        		System.out.println(" removing " + bullRun.parent.profit + " with balance of  " + result);
+        	    			usedBullRunSet.remove(ancestor);
+        	    			netTransactions--;
+    	    				// TODO: recursively add all children from this ancestor back to potential
+    	    				List<BullRunNode> tmpList = new ArrayList<BullRunNode>();
+        	    			recursivelyAddChildren(ancestor, tmpList);
+        	    			Collections.sort(tmpList);
+        	    			acceptedProfitPotential.addAll(0, tmpList);
+        				}
+        			}
+        		}
+        		else {
+        			netTransactions++;
+            		result += bullRun.profit;
+            		usedBullRunSet.add(bullRun);
+            		System.out.println(" + " + bullRun.profit + " at transaction " + netTransactions + " with balance of " + result);
+        		}
     		}
-    		else {
+    		else if (pendingSwap.size() > 0) {
+    			bullRun = getNextFromPendingSwap();
     			netTransactions++;
         		result += bullRun.profit;
         		usedBullRunSet.add(bullRun);
-//        		System.out.println(" + " + bullRun.profit + " at transaction " + netTransactions + " with balance of " + result);
+        		System.out.println(" + " + bullRun.profit + " at transaction " + netTransactions + " with balance of " + result);
+        		acceptedProfitPotential.addAll(pendingSwap.remove(bullRun));
+    			Collections.sort(acceptedProfitPotential);
     		}
-    	}
-    	// now check if we still have left over transaction allowances that we can use
-    	if (netTransactions < k) {
-	    	for (BullRunNode parent : pendingSwap.keySet()) {
-	    		// really need to put this in a sorted queue in case we run out of allowed transactions
-	    		int total = 0;
-	    		List<BullRunNode> children = pendingSwap.get(parent);
-	    		for (BullRunNode child : children) {
-	    			total += child.profit;
-	    		}
-	    		if (total > parent.profit) {
-	    			result += total - parent.profit;
-	    			netTransactions += children.size() - 1;
-	    			if (netTransactions >= k) {
-	    				break;
-	    			}
-	    		}
-	    	}
+    		else
+    			break;
+
     	}
     	return result;
 		
+	}
+	
+	private BullRunNode getNextFromPendingSwap() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private void recursivelyAddChildren(BullRunNode ancestor, List<BullRunNode> tmpList) {
+		for (BullRunNode child : pendingSwap.get(ancestor)) {
+			acceptedProfitPotential.add(child);
+			recursivelyAddChildren(child, tmpList);
+		}
+	}
+
+	private BullRunNode getAncestorInUse(BullRunNode childNode) {
+		for (BullRunNode parent=childNode.parent; parent != null; parent = parent.parent) {
+			if (usedBullRunSet.contains(parent))
+				return parent;
+		}
+		return null;
 	}
 	
 	private void searchBullCycleRecursive(BullRunNode parentBullRun, int startIndex, int endIndex) {
@@ -224,7 +242,7 @@ public class Solution3 {
 
 		@Override
 		public int compareTo(BullRunNode o) {
-			return this.profit - o.profit;
+			return o.profit - this.profit;
 		}
 	}
 	
