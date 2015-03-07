@@ -34,10 +34,12 @@ public class Solution3 {
 	List<BullRunNode> acceptedProfitPotential;
 	int[] squeezedPrices;
 	int numElements = 0;
-	int minProfits = Integer.MAX_VALUE;
 	
+	int finalProfit;
+	int netTransactions = 0;
 	Set<BullRunNode> usedBullRunSet;
 	Map<BullRunNode, List<BullRunNode>> pendingSwap;
+	List<BullRunNode> pendingNodeOrderedList;
 	
 	public int maxProfit(int k, int[] prices) {
 		
@@ -88,85 +90,111 @@ public class Solution3 {
     	
     	BullRunNode bullRunNode = new BullRunNode(null, squeezedPrices[endIndex] - squeezedPrices[startIndex], startIndex, endIndex) ;
     	
-    	searchBullCycleRecursive(bullRunNode, startIndex, endIndex);
-		int result = 0;
-
-    	Set<BullRunNode> usedBullRunSet = new HashSet<BullRunNode>();
+    	usedBullRunSet = new HashSet<BullRunNode>();
     	pendingSwap = new HashMap<BullRunNode, List<BullRunNode>>();
+    	pendingNodeOrderedList = new ArrayList<BullRunNode>();
+    	
+    	searchBullCycleRecursive(bullRunNode, startIndex, endIndex);
+		finalProfit = 0;
     	Collections.sort(acceptedProfitPotential);
-    	int netTransactions = 0;
+    	netTransactions = 0;
     	BullRunNode bullRun = null;
     	while(netTransactions < k) {
     		if (acceptedProfitPotential.size() > 0) {
     			bullRun = acceptedProfitPotential.remove(0);
-        		BullRunNode ancestor = getAncestorInUse(bullRun);
-        		if (ancestor != null) {
+    			if (usedBullRunSet.contains(bullRun.parent) || pendingSwap.get(bullRun.parent) != null) {
     				pendingSwap.put(bullRun, new ArrayList<BullRunNode>());
-        			List<BullRunNode> children = pendingSwap.get(bullRun.parent);
+    				pendingNodeOrderedList.add(bullRun);
+    				List<BullRunNode> children = pendingSwap.get(bullRun.parent);
+        			// check if a usedBullRun is now holding a pendingSwap bull run
         			if (children == null) {
         				children = new ArrayList<BullRunNode>();
         				children.add(bullRun);
         				pendingSwap.put(bullRun.parent, children);
+        				continue;
         			}
-        			else {
-        				children.add(bullRun);
-        				int childrenProfitTotal = 0;
-        				for (BullRunNode child : children) {
-        					childrenProfitTotal += child.profit;
-        				}
-        				// swap only if the children total adds up to parent and the next biggest profit.
-        				if (acceptedProfitPotential.size() <= 0 || childrenProfitTotal > bullRun.parent.profit + acceptedProfitPotential.get(0).profit) {
-        	    			result -= bullRun.parent.profit;
-        	        		System.out.println(" removing " + bullRun.parent.profit + " with balance of  " + result);
-        	    			usedBullRunSet.remove(ancestor);
+    				children.add(bullRun);
+    				
+    				// swap only if the children total adds up to parent and the next biggest profit.
+    				int childrenProfitTotal = 0;
+    				for (BullRunNode child : children) {
+    					childrenProfitTotal += child.profit;
+    				}
+    				if (acceptedProfitPotential.size() <= 0 || childrenProfitTotal > bullRun.parent.profit + acceptedProfitPotential.get(0).profit) {
+    					if (usedBullRunSet.contains(bullRun.parent)) {
+    						usedBullRunSet.remove(bullRun.parent);
+        	    			finalProfit -= bullRun.parent.profit;
         	    			netTransactions--;
-    	    				// TODO: recursively add all children from this ancestor back to potential
-    	    				List<BullRunNode> tmpList = new ArrayList<BullRunNode>();
-        	    			recursivelyAddChildren(ancestor, tmpList);
-        	    			Collections.sort(tmpList);
-        	    			acceptedProfitPotential.addAll(0, tmpList);
-        				}
-        			}
+        	        		System.out.println(" removing " + bullRun.parent.profit + " with balance of  " + finalProfit);
+    					}
+    					else {
+    						// TODO: need to remove this from pendingNodeOrderedList as well
+    						pendingSwap.remove(bullRun.parent);
+    					}
+        				for (BullRunNode child : children) {
+    						// TODO: need to remove this from pendingNodeOrderedList as well
+        					pendingSwap.remove(child);
+        				}    					
+        				acceptedProfitPotential.addAll(0, children);
+    	    			Collections.sort(acceptedProfitPotential);
+    				}
         		}
         		else {
-        			netTransactions++;
-            		result += bullRun.profit;
+            		finalProfit += bullRun.profit;
             		usedBullRunSet.add(bullRun);
-            		System.out.println(" + " + bullRun.profit + " at transaction " + netTransactions + " with balance of " + result);
+        			netTransactions++;
+            		System.out.println(" + " + bullRun.profit + " at transaction " + netTransactions + " with balance of " + finalProfit);
         		}
     		}
     		else if (pendingSwap.size() > 0) {
-    			bullRun = getNextFromPendingSwap();
-    			netTransactions++;
-        		result += bullRun.profit;
-        		usedBullRunSet.add(bullRun);
-        		System.out.println(" + " + bullRun.profit + " at transaction " + netTransactions + " with balance of " + result);
-        		acceptedProfitPotential.addAll(pendingSwap.remove(bullRun));
+    			getNextFromPendingSwap();
     			Collections.sort(acceptedProfitPotential);
     		}
     		else
     			break;
 
     	}
-    	return result;
+    	return finalProfit;
 		
 	}
 	
+	private void recursivelyRemoveAncestors(BullRunNode parentNode, BullRunNode maxAncestor) {
+		List<BullRunNode> children = pendingSwap.remove(parentNode);
+		acceptedProfitPotential.addAll(0, children);
+		if (parentNode == maxAncestor) {
+			usedBullRunSet.remove(parentNode);
+			finalProfit -= parentNode.profit;
+			netTransactions--;
+    		System.out.println(" removing " + parentNode.profit + " with balance of  " + finalProfit);
+		}
+		else {
+			recursivelyRemoveAncestors(parentNode.parent, maxAncestor);
+		}		
+	}
+
 	private BullRunNode getNextFromPendingSwap() {
-		// TODO Auto-generated method stub
-		return null;
+		BullRunNode result = pendingNodeOrderedList.remove(0);
+		List<BullRunNode> children = pendingSwap.remove(result);
+		usedBullRunSet.remove(result.parent);
+		netTransactions--;
+		finalProfit -= result.parent.profit;		
+		System.out.println(" removing " + result.parent.profit + " with balance of  " + finalProfit);
+		acceptedProfitPotential.addAll(children);
+		return result;
 	}
 
 	private void recursivelyAddChildren(BullRunNode ancestor, List<BullRunNode> tmpList) {
+		if (ancestor == null)
+			return;
 		for (BullRunNode child : pendingSwap.get(ancestor)) {
 			acceptedProfitPotential.add(child);
 			recursivelyAddChildren(child, tmpList);
 		}
 	}
 
-	private BullRunNode getAncestorInUse(BullRunNode childNode) {
+	private BullRunNode getTopPendingAncestor(BullRunNode childNode) {
 		for (BullRunNode parent=childNode.parent; parent != null; parent = parent.parent) {
-			if (usedBullRunSet.contains(parent))
+			if (usedBullRunSet.contains(parent.parent))
 				return parent;
 		}
 		return null;
