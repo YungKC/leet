@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +40,7 @@ public class Solution3 {
 	int netTransactions = 0;
 	Set<BullRunNode> usedBullRunSet;
 	Map<BullRunNode, List<BullRunNode>> pendingSwap;
-	List<BullRunNode> pendingNodeOrderedList;
+	Iterator<BullRunNode> pendingIterator;
 	
 	public int maxProfit(int k, int[] prices) {
 		
@@ -92,7 +93,6 @@ public class Solution3 {
     	
     	usedBullRunSet = new HashSet<BullRunNode>();
     	pendingSwap = new HashMap<BullRunNode, List<BullRunNode>>();
-    	pendingNodeOrderedList = new ArrayList<BullRunNode>();
     	
     	searchBullCycleRecursive(bullRunNode, startIndex, endIndex);
 		finalProfit = 0;
@@ -102,9 +102,9 @@ public class Solution3 {
     	while(netTransactions < k) {
     		if (acceptedProfitPotential.size() > 0) {
     			bullRun = acceptedProfitPotential.remove(0);
+//    			System.out.println("Processing index " + bullRun.startIndex);
     			if (usedBullRunSet.contains(bullRun.parent) || pendingSwap.get(bullRun.parent) != null) {
     				pendingSwap.put(bullRun, new ArrayList<BullRunNode>());
-    				pendingNodeOrderedList.add(bullRun);
     				List<BullRunNode> children = pendingSwap.get(bullRun.parent);
         			// check if a usedBullRun is now holding a pendingSwap bull run
         			if (children == null) {
@@ -121,34 +121,46 @@ public class Solution3 {
     					childrenProfitTotal += child.profit;
     				}
     				if (acceptedProfitPotential.size() <= 0 || childrenProfitTotal > bullRun.parent.profit + acceptedProfitPotential.get(0).profit) {
-    					if (usedBullRunSet.contains(bullRun.parent)) {
+   						pendingSwap.remove(bullRun.parent);
+        				for (BullRunNode child : children) {
+        					acceptedProfitPotential.add(child);
+    						// TODO: need to remove this from pendingNodeOrderedList as well
+        					pendingSwap.remove(child);
+         				}    					
+    	    			Collections.sort(acceptedProfitPotential);
+   					    if (usedBullRunSet.contains(bullRun.parent)) {
     						usedBullRunSet.remove(bullRun.parent);
         	    			finalProfit -= bullRun.parent.profit;
         	    			netTransactions--;
-        	        		System.out.println(" removing " + bullRun.parent.profit + " with balance of  " + finalProfit);
+//        	        		System.out.println(" removing " + bullRun.parent.profit + " with balance of  " + finalProfit + " at pos " + bullRun.parent.startIndex);
     					}
-    					else {
-    						// TODO: need to remove this from pendingNodeOrderedList as well
-    						pendingSwap.remove(bullRun.parent);
-    					}
-        				for (BullRunNode child : children) {
-    						// TODO: need to remove this from pendingNodeOrderedList as well
-        					pendingSwap.remove(child);
-        				}    					
-        				acceptedProfitPotential.addAll(0, children);
-    	    			Collections.sort(acceptedProfitPotential);
     				}
         		}
         		else {
             		finalProfit += bullRun.profit;
             		usedBullRunSet.add(bullRun);
         			netTransactions++;
-            		System.out.println(" + " + bullRun.profit + " at transaction " + netTransactions + " with balance of " + finalProfit);
+//            		System.out.println(" + " + bullRun.profit + " at transaction " + netTransactions + " with balance of " + finalProfit + " at pos " + bullRun.startIndex);
         		}
     		}
     		else if (pendingSwap.size() > 0) {
-    			getNextFromPendingSwap();
-    			Collections.sort(acceptedProfitPotential);
+    			// find the biggest drop in value inside a usedBullRunSet 
+    			List<Integer> priceDrops = new ArrayList<Integer>();
+				for (BullRunNode node : usedBullRunSet) {
+					int currentIndex = node.startIndex+2;
+					while (currentIndex < node.endIndex) {
+						priceDrops.add(squeezedPrices[currentIndex]-squeezedPrices[currentIndex-1]);
+						currentIndex += 2;
+					}					
+				}
+				Collections.sort(priceDrops);
+				int lastIndex = priceDrops.size()-1;
+				int numMoreTransactions = k-netTransactions;
+				for (int i=0; i<numMoreTransactions && i<= lastIndex; i++) {
+					finalProfit -= priceDrops.get(lastIndex-i);
+//	        		System.out.println(" adding " + priceDrops.get(lastIndex-i) + " with balance of  " + finalProfit);
+				}
+				break;
     		}
     		else
     			break;
@@ -157,49 +169,7 @@ public class Solution3 {
     	return finalProfit;
 		
 	}
-	
-	private void recursivelyRemoveAncestors(BullRunNode parentNode, BullRunNode maxAncestor) {
-		List<BullRunNode> children = pendingSwap.remove(parentNode);
-		acceptedProfitPotential.addAll(0, children);
-		if (parentNode == maxAncestor) {
-			usedBullRunSet.remove(parentNode);
-			finalProfit -= parentNode.profit;
-			netTransactions--;
-    		System.out.println(" removing " + parentNode.profit + " with balance of  " + finalProfit);
-		}
-		else {
-			recursivelyRemoveAncestors(parentNode.parent, maxAncestor);
-		}		
-	}
 
-	private BullRunNode getNextFromPendingSwap() {
-		BullRunNode result = pendingNodeOrderedList.remove(0);
-		List<BullRunNode> children = pendingSwap.remove(result);
-		usedBullRunSet.remove(result.parent);
-		netTransactions--;
-		finalProfit -= result.parent.profit;		
-		System.out.println(" removing " + result.parent.profit + " with balance of  " + finalProfit);
-		acceptedProfitPotential.addAll(children);
-		return result;
-	}
-
-	private void recursivelyAddChildren(BullRunNode ancestor, List<BullRunNode> tmpList) {
-		if (ancestor == null)
-			return;
-		for (BullRunNode child : pendingSwap.get(ancestor)) {
-			acceptedProfitPotential.add(child);
-			recursivelyAddChildren(child, tmpList);
-		}
-	}
-
-	private BullRunNode getTopPendingAncestor(BullRunNode childNode) {
-		for (BullRunNode parent=childNode.parent; parent != null; parent = parent.parent) {
-			if (usedBullRunSet.contains(parent.parent))
-				return parent;
-		}
-		return null;
-	}
-	
 	private void searchBullCycleRecursive(BullRunNode parentBullRun, int startIndex, int endIndex) {
 		if (endIndex <= startIndex)
 			return;
