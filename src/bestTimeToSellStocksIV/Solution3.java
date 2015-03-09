@@ -167,9 +167,9 @@ public class Solution3 {
 
     	}
     	
-    	for (BullRunNode node : usedBullRunSet) {
-    		System.out.println(node.profit + "\t" + node.startIndex + "\t" + node.endIndex);
-    	}
+//    	for (BullRunNode node : usedBullRunSet) {
+//    		System.out.println(node.profit + "\t" + node.startIndex + "\t" + node.endIndex);
+//    	}
     	return finalProfit;
 		
 	}
