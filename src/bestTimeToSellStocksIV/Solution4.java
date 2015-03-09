@@ -1,13 +1,5 @@
 package bestTimeToSellStocksIV;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /*
  * 
@@ -21,12 +13,10 @@ You may not engage in multiple transactions at the same time (ie, you must sell 
 
 Idea:
 
-find boundary of time from lowestPrice to highestPrice
-for this group, 
-	p_high - p_low is a profit potential
-	each price drop segment is a profit potential
-for all price point before this group, repeat step above
-for all price pints after this group, repeat step above
+use DP:
+
+- max profit with trade i using price history j is max(p[i][j-1], balance of (p[i-1][j-1]) - price[j-1] + price[j])
+- if we have more trade allowance than number of price history, then max profit is simply all the price increases
 
 
  */
